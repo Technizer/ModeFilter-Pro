@@ -114,7 +114,7 @@ mode-filter/
 │ └── ... (other classes)
 │
 ├── templates/
-│ └── content-product-mfil.php (Note: using prefix for template name)
+│ └── content-product-modep.php (Note: using prefix for template name)
 │
 └── assets/
 └── ...
@@ -125,7 +125,7 @@ mode-filter/
 
 * 100% OOP modular design.
 * Uses WordPress AJAX API and is fully cache-friendly.
-* Template overrides supported: `yourtheme/woocommerce/content-product-mfil.php`
+* Template overrides supported: `yourtheme/woocommerce/content-product-modep.php`
 * Fully translatable.
 * **No third-party APIs or tracking.**
 * Declares compatibility with WooCommerce HPOS (High-Performance Order Storage).
@@ -156,8 +156,8 @@ Yes. All AJAX endpoints are uncached, and filtering is designed not to break pag
 No. Catalog Mode only hides specific elements (like prices or Add to Cart) on the frontend. It does not modify product types or core checkout logic.
 
 = Can I override the product template? =
-Yes. Copy the template file (`/templates/content-product-mfil.php`) into:
-`yourtheme/woocommerce/content-product-mfil.php`
+Yes. Copy the template file (`/templates/content-product-modep.php`) into:
+`yourtheme/woocommerce/content-product-modep.php`
 
 = Does the plugin load data to external services? =
 No. ModeFilter Pro does not send any data externally. No telemetry, no tracking, no remote scripts.
