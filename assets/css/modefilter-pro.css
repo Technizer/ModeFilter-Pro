@@ -1,0 +1,531 @@
+/* =========================================================
+   ModeFilter Pro — Modern UI (2025/26) — Pro (3 layouts only)
+   Layouts: grid, overlay, masonry
+   UI: chips-only
+   ========================================================= */
+
+/* ---------------------------
+   Design Tokens
+---------------------------- */
+.modep {
+    --modep-bg: transparent;
+
+    --modep-surface: #ffffff;
+    --modep-surface-2: #f6f7fb;
+
+    --modep-border: rgba(20, 20, 40, 0.10);
+    --modep-border-2: rgba(20, 20, 40, 0.14);
+
+    --modep-text: rgba(10, 10, 20, 0.92);
+    --modep-muted: rgba(10, 10, 20, 0.62);
+
+    --modep-radius: 16px;
+    --modep-radius-sm: 12px;
+
+    --modep-shadow-soft: 0 10px 24px rgba(0, 0, 0, 0.07);
+    --modep-shadow: 0 18px 42px rgba(0, 0, 0, 0.10);
+
+    --modep-accent: #2f6cff;
+    --modep-accent-soft: rgba(47, 108, 255, 0.10);
+
+    --modep-focus: 0 0 0 3px rgba(47, 108, 255, 0.22);
+
+    --modep-gap: 18px;
+    --modep-gap-sm: 10px;
+
+    color: var(--modep-text);
+}
+
+/* ---------------------------
+   Core Layout
+---------------------------- */
+.modep {
+    display: flex;
+    gap: var(--modep-gap);
+    align-items: flex-start;
+    margin: 18px 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modep-sidebar {
+    flex: 0 0 320px;
+    max-width: 320px;
+    box-sizing: border-box;
+    background: var(--modep-surface);
+    border: 1px solid var(--modep-border);
+    border-radius: var(--modep-radius);
+    box-shadow: var(--modep-shadow-soft);
+    padding: 14px;
+    position: sticky;
+    top: 18px;
+}
+
+.modep-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    box-sizing: border-box;
+    background: var(--modep-surface);
+    border: 1px solid var(--modep-border);
+    border-radius: var(--modep-radius);
+    box-shadow: var(--modep-shadow-soft);
+    padding: 14px;
+}
+
+/* Filter position classes (JS applies) */
+.modep.modep--filters-right {
+    flex-direction: row-reverse;
+}
+
+.modep.modep--filters-top {
+    flex-direction: column;
+}
+
+.modep.modep--filters-top .modep-sidebar {
+    max-width: 100%;
+    width: 100%;
+    position: relative;
+    top: auto;
+}
+
+.modep.modep--filters-top .modep-main {
+    width: 100%;
+}
+
+/* Toggle button (mobile UX) */
+.modep-toggle-btn {
+    display: none;
+    margin-bottom: 12px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--modep-border);
+    cursor: pointer;
+    background: var(--modep-surface);
+    color: var(--modep-text);
+    font-weight: 800;
+    box-shadow: var(--modep-shadow-soft);
+}
+
+.modep-toggle-btn:focus {
+    outline: none;
+    box-shadow: var(--modep-focus), var(--modep-shadow-soft);
+}
+
+/* ---------------------------
+   Filter Boxes (chips-only)
+---------------------------- */
+.modep .modep-filter-box {
+    border: 1px solid var(--modep-border);
+    background: linear-gradient(180deg, var(--modep-surface), var(--modep-surface-2));
+    border-radius: var(--modep-radius);
+    padding: 14px;
+    margin-bottom: 14px;
+}
+
+.modep .modep-filter-box h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    letter-spacing: 0.2px;
+    color: var(--modep-muted);
+}
+
+.modep .modep-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.modep .modep-chip {
+    appearance: none;
+    border: 1px solid var(--modep-border);
+    background: rgba(10, 10, 20, 0.03);
+    color: var(--modep-text);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    transition: transform .16s ease, box-shadow .16s ease, background .16s ease, border .16s ease;
+}
+
+.modep .modep-chip:hover {
+    transform: translateY(-1px);
+    border-color: var(--modep-border-2);
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.07);
+}
+
+.modep .modep-chip.is-selected {
+    background: var(--modep-accent-soft);
+    border-color: rgba(47, 108, 255, 0.35);
+    box-shadow: 0 14px 28px rgba(47, 108, 255, 0.14);
+}
+
+.modep .modep-chip:focus {
+    outline: none;
+    box-shadow: var(--modep-focus);
+}
+
+/* Show more button */
+.modep-terms-more {
+    margin-top: 10px;
+    width: 100%;
+    border: 1px solid var(--modep-border);
+    background: var(--modep-surface);
+    border-radius: 14px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-weight: 900;
+}
+
+/* ---------------------------
+   Sort Bar
+---------------------------- */
+.modep .modep-sort-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 14px;
+    gap: 10px;
+}
+
+.modep .modep-sort-label {
+    font-size: 13px;
+    color: var(--modep-muted);
+}
+
+.modep select.modep-sort {
+    padding: 10px 12px;
+    border-radius: 12px;
+    border: 1px solid var(--modep-border);
+    background: var(--modep-surface-2);
+    font-weight: 700;
+}
+
+.modep select.modep-sort:focus {
+    outline: none;
+    box-shadow: var(--modep-focus);
+    border-color: rgba(47, 108, 255, 0.35);
+}
+
+/* ---------------------------
+   Product Grid
+---------------------------- */
+.modep-grid {
+    grid-template-columns: repeat(var(--modep-cols, 3), minmax(0, 1fr));
+    display: grid;
+    gap: var(--modep-gap);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.modep-grid>li {
+    list-style: none;
+}
+
+/* Loading */
+.modep-grid.loading {
+    opacity: .65;
+    pointer-events: none;
+    filter: saturate(0.85);
+}
+
+/* ---------------------------
+   Product Card
+---------------------------- */
+.modep-product-inner {
+    border: 1px solid var(--modep-border);
+    border-radius: 18px;
+    padding: 14px;
+    background: var(--modep-surface);
+    text-align: left;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: var(--modep-shadow-soft);
+    transition: transform .20s ease, box-shadow .20s ease, border-color .20s ease;
+}
+
+/* Grid preset hover (default) */
+.modep--preset-grid .modep-product-inner:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--modep-shadow);
+    border-color: var(--modep-border-2);
+}
+
+/* Thumbnail */
+.modep-thumb-link,
+.modep-thumb {
+    display: block;
+    border-radius: 14px;
+    overflow: hidden;
+    background: var(--modep-surface-2);
+    border: 1px solid var(--modep-border);
+    position: relative;
+    /* for overlay */
+}
+
+.modep-thumb-link img,
+.modep-thumb img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    border-radius: 0;
+    transition: transform .22s ease;
+}
+
+.modep-product-inner:hover .modep-thumb-link img,
+.modep-product-inner:hover .modep-thumb img {
+    transform: scale(1.03);
+}
+
+/* Title */
+.modep-title {
+    font-size: 15px;
+    margin: 2px 0 0;
+    line-height: 1.35;
+}
+
+.modep-title a {
+    color: var(--modep-text);
+    text-decoration: none;
+}
+
+.modep-title a:hover {
+    text-decoration: underline;
+}
+
+/* Price */
+.modep-price {
+    font-weight: 800;
+    margin: 0;
+    font-size: 15px;
+}
+
+/* Excerpt */
+.modep-excerpt {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.45;
+    color: var(--modep-muted);
+}
+
+/* Add to cart area */
+.modep-add-to-cart {
+    margin-top: auto;
+}
+
+/* Buttons */
+.modep-add-to-cart .button,
+.modep-enquire-btn,
+.modep-notify-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 14px;
+    font-weight: 900;
+    font-size: 13px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: transform .18s ease, box-shadow .18s ease, filter .18s ease, background .18s ease;
+}
+
+/* Enquire/Notify */
+.modep-enquire-btn,
+.modep-notify-btn {
+    border: 1px solid transparent;
+    color: #fff;
+    background: linear-gradient(135deg, var(--modep-accent), #ff7a2f);
+    box-shadow: 0 16px 28px rgba(47, 108, 255, 0.18);
+}
+
+.modep-enquire-btn:hover,
+.modep-notify-btn:hover {
+    transform: translateY(-1px);
+    filter: brightness(1.02);
+}
+
+.modep-enquire-btn:focus,
+.modep-notify-btn:focus {
+    outline: none;
+    box-shadow: var(--modep-focus), 0 16px 28px rgba(47, 108, 255, 0.18);
+}
+
+/* Woo add-to-cart button */
+.modep-add-to-cart .button {
+    border: 1px solid var(--modep-border);
+    background: var(--modep-surface-2);
+    color: var(--modep-text);
+    box-shadow: 0 12px 22px rgba(0, 0, 0, 0.07);
+}
+
+.modep-add-to-cart .button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 18px 34px rgba(0, 0, 0, 0.09);
+}
+
+/* Stock badges */
+.modep-stock-badge {
+    display: inline-flex;
+    align-items: center;
+    width: fit-content;
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+    border: 1px solid var(--modep-border);
+    background: rgba(10, 10, 20, 0.04);
+    color: var(--modep-text);
+}
+
+.modep-instock {
+    background: rgba(40, 167, 69, 0.12);
+    border-color: rgba(40, 167, 69, 0.25);
+}
+
+.modep-onbackorder {
+    background: rgba(255, 122, 47, 0.14);
+    border-color: rgba(255, 122, 47, 0.26);
+}
+
+.modep-outofstock {
+    background: rgba(220, 53, 69, 0.12);
+    border-color: rgba(220, 53, 69, 0.26);
+}
+
+/* Catalog message */
+.modep-catalog-message {
+    margin: 2px 0 0;
+    font-size: 12.5px;
+    color: var(--modep-muted);
+    background: rgba(47, 108, 255, 0.07);
+    border: 1px solid rgba(47, 108, 255, 0.16);
+    padding: 10px 12px;
+    border-radius: 14px;
+}
+
+/* ---------------------------
+   Preset: Overlay
+   - shows title on thumbnail overlay
+   - hides normal title (clean)
+---------------------------- */
+.modep--preset-overlay .modep-title {
+    display: none;
+}
+
+.modep--preset-overlay .modep-thumb-link::after,
+.modep--preset-overlay .modep-thumb::after {
+    content: attr(data-title);
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    background: rgba(10, 10, 20, 0.75);
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 800;
+    backdrop-filter: blur(8px);
+}
+
+/* ---------------------------
+   Preset: Masonry (CSS columns)
+   Note: uses the same card markup, but different grid layout.
+---------------------------- */
+.modep-grid.modep-grid--masonry {
+    display: block;
+    column-count: var(--modep-cols, 3);
+    column-gap: var(--modep-gap);
+}
+
+.modep-grid.modep-grid--masonry>li {
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 var(--modep-gap);
+    break-inside: avoid;
+}
+
+/* ---------------------------
+   Pagination
+---------------------------- */
+.modep-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 18px 0 6px;
+}
+
+.modep-pagination .modep-load-more,
+.modep-pagination .modep-page-btn {
+    padding: 10px 14px;
+    border: 1px solid var(--modep-border);
+    background: var(--modep-surface);
+    border-radius: 999px;
+    cursor: pointer;
+    font-weight: 900;
+    font-size: 13px;
+    box-shadow: var(--modep-shadow-soft);
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.modep-pagination .modep-load-more:hover,
+.modep-pagination .modep-page-btn:hover {
+    transform: translateY(-1px);
+    border-color: var(--modep-border-2);
+    box-shadow: var(--modep-shadow);
+}
+
+.modep-pagination .modep-page-btn.is-active {
+    background: var(--modep-accent-soft);
+    border-color: rgba(47, 108, 255, 0.35);
+}
+
+/* ---------------------------
+   Mobile
+---------------------------- */
+@media (max-width: 768px) {
+    .modep {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .modep-sidebar {
+        display: none;
+        width: 100%;
+        max-width: 100%;
+        position: relative;
+        top: auto;
+        padding: 12px;
+    }
+
+    .modep-sidebar.open {
+        display: block;
+        margin-bottom: 12px;
+    }
+
+    .modep-main {
+        width: 100%;
+        padding: 12px;
+    }
+
+    .modep-toggle-btn {
+        display: inline-flex;
+        width: fit-content;
+    }
+
+    .modep-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+}
+
+@media (min-width: 769px) {
+    .modep .modep-toggle-btn {
+        display: none !important;
+    }
+}

@@ -1,0 +1,728 @@
+/* --- ModeFilter Pro Admin – modern 2026 vibe --- */
+
+.modep-wrap {
+    max-width: 1100px;
+}
+
+.modep-h1 {
+    font-size: 26px;
+    font-weight: 750;
+    letter-spacing: .2px;
+}
+
+.modep-subtle {
+    color: #667085;
+    margin-top: 6px;
+}
+
+/* ---------- Admin menu polish (2026) ---------- */
+/* Keep this subtle to avoid fighting WP + other plugins */
+#adminmenu #toplevel_page_modefilter-pro>a.menu-top {
+    border-radius: 10px;
+    margin: 4px 6px;
+    transition: background-color .15s ease, box-shadow .15s ease;
+}
+
+#adminmenu #toplevel_page_modefilter-pro>a.menu-top:hover {
+    background: rgba(11, 102, 255, 0.08);
+}
+
+#adminmenu #toplevel_page_modefilter-pro.wp-has-current-submenu>a.menu-top,
+#adminmenu #toplevel_page_modefilter-pro.current>a.menu-top {
+    background: rgba(11, 102, 255, 0.12);
+    box-shadow: 0 0 0 1px rgba(11, 102, 255, 0.18) inset;
+}
+
+#adminmenu #toplevel_page_modefilter-pro .wp-menu-image:before {
+    color: #0b66ff;
+}
+
+#adminmenu #toplevel_page_modefilter-pro.wp-has-current-submenu .wp-menu-image:before {
+    color: #0b66ff;
+}
+
+/* Submenu spacing */
+#adminmenu .wp-submenu a[href*="modefilter-pro"] {
+    border-radius: 8px;
+}
+
+#adminmenu .wp-submenu a[href*="modefilter-pro"]:hover {
+    background: rgba(11, 102, 255, 0.08);
+}
+
+/* ---------- Layout ---------- */
+.modep-grid {
+    display: grid;
+    gap: 16px;
+    margin-top: 18px;
+    width: 100%;
+}
+
+.modep-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.modep-grid-3 {
+    grid-template-columns: 22.05% 22.05% 53%;
+}
+
+.modep-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+@media (max-width:1120px) {
+
+    .modep-grid-3,
+    .modep-grid-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width:720px) {
+
+    .modep-grid-2,
+    .modep-grid-3 {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- Cards ---------- */
+.modep-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(16, 24, 40, 0.04);
+    padding: 14px;
+}
+
+.modep-card-padded {
+    padding: 18px;
+}
+
+.modep-card-title {
+    margin: 4px 0 8px;
+    font-size: 16px;
+    font-weight: 650;
+    letter-spacing: .1px;
+}
+
+.modep-card-body {
+    color: #1f2937;
+}
+
+.modep-card-footer {
+    margin-top: 12px;
+}
+
+.modep-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 10px;
+    text-transform: uppercase;
+    background: #eef6ff;
+    color: #0b66ff;
+    padding: 2px 8px;
+    border-radius: 999px;
+    border: 1px solid #d9e9ff;
+}
+
+/* ---------- Hero ---------- */
+.modep-hero {
+    margin: 12px 0 18px;
+    padding: 16px;
+    border: 1px solid #dbe7ff;
+    border-radius: 16px;
+    background: linear-gradient(180deg, #f6faff, #ffffff);
+    width: 97%;
+}
+
+.modep-hero__cta .modep-btn {
+    margin-right: 6px;
+}
+
+/* ---------- Typography / links / code ---------- */
+.modep-list {
+    margin: 0;
+    padding-left: 18px;
+}
+
+.modep-link {
+    text-decoration: none;
+    color: #0b66ff;
+}
+
+.modep-link:hover {
+    text-decoration: underline;
+}
+
+.modep-code {
+    background: #0b1220;
+    color: #e9f1ff;
+    padding: 12px;
+    border-radius: 12px;
+    overflow: auto;
+    font-size: 12px;
+}
+
+/* ---------- Media ---------- */
+.modep-media {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #e9eef3;
+}
+
+.modep-yt {
+    width: 100%;
+    height: 180px;
+    border: 0;
+    display: block;
+}
+
+/* ---------- Shortcode rows ---------- */
+.modep-sc-list {
+    display: grid;
+    gap: 10px;
+}
+
+.modep-sc-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px;
+    background: #f9fbfd;
+    border: 1px solid #edf2f7;
+    border-radius: 12px;
+}
+
+.modep-sc-row code {
+    font-size: 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: calc(100% - 90px);
+}
+
+/* ---------- Forms ---------- */
+.modep-form .form-table th {
+    width: 220px;
+}
+
+.modep-form-table th {
+    padding-top: 14px;
+}
+
+.modep-form-table td {
+    padding-top: 10px;
+}
+
+.modep-input,
+.modep-select {
+    min-width: 260px;
+}
+
+.modep-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
+
+.modep-gap {
+    gap: 12px;
+}
+
+.modep-row input[type=text],
+.modep-row input[type=url] {
+    min-height: 40px;
+}
+
+/* ---------- Nice checkboxes & radios ---------- */
+.modep-checkbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 10px;
+    background: #f9fbfd;
+    border: 1px solid #e6eef7;
+    border-radius: 12px;
+    margin: 6px 6px 0 0;
+}
+
+.modep-radio {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-right: 12px;
+    padding: 6px 10px;
+    border-radius: 12px;
+    background: #fafafa;
+    border: 1px solid #eee;
+}
+
+/* ---------- Attributes grid ---------- */
+.modep-attrs-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+@media (max-width:720px) {
+    .modep-attrs-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ---------- Toggle switch ---------- */
+.modep-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modep-switch input {
+    display: none;
+}
+
+.modep-switch-ui {
+    width: 40px;
+    height: 22px;
+    background: #e5e9f0;
+    border-radius: 999px;
+    position: relative;
+    transition: all .2s ease;
+}
+
+.modep-switch-ui::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, .15);
+    transition: all .2s ease;
+}
+
+.modep-switch input:checked+.modep-switch-ui {
+    background: #0b66ff;
+}
+
+.modep-switch input:checked+.modep-switch-ui::after {
+    transform: translateX(18px);
+}
+
+.modep-switch-label {
+    color: #111827;
+}
+
+/* ---------- Top Tabs ---------- */
+.modep-tabs {
+    display: flex;
+    gap: 8px;
+    margin: 16px 0 18px;
+    border-bottom: 1px solid #e9eef3;
+}
+
+.modep-tab {
+    padding: 9px 12px;
+    border: 1px solid transparent;
+    border-bottom: 2px solid transparent;
+    border-radius: 12px 12px 0 0;
+    color: #344054;
+    text-decoration: none;
+    transition: background-color .15s ease, border-color .15s ease;
+}
+
+.modep-tab:hover {
+    background: #f6faff;
+    border-color: #e9eef3;
+}
+
+.modep-tab.is-active {
+    background: #fff;
+    border-color: #e9eef3;
+    border-bottom-color: #fff;
+    font-weight: 650;
+}
+
+/* ---------- Section card with side description ---------- */
+.modep-section {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.modep-section-title {
+    margin: 6px 0 4px;
+    font-size: 14px;
+    font-weight: 650;
+}
+
+.modep-section-desc {
+    color: #606770;
+    margin: 0;
+}
+
+@media (max-width:920px) {
+    .modep-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+.modep-section .modep-card {
+    margin: 0;
+}
+
+/* Dashboard usage layout */
+.modep-columns {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+.modep-columns--2 .modep-columns__col {
+    flex: 1 1 260px;
+    min-width: 220px;
+}
+
+.modep-separator {
+    border: 0;
+    border-top: 1px solid #e5e7eb;
+    margin: 16px 0;
+}
+
+.modep-note {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+/* ---------- Products list "Mode" badge ---------- */
+.column-modep_catalog_mode {
+    width: 130px;
+}
+
+.modep-mode-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    border: 1px solid rgba(148, 163, 184, 0.45);
+    cursor: pointer;
+    background: #edf2f7;
+    color: #475569;
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.10);
+    transition: transform .08s ease, box-shadow .16s ease, opacity .16s ease;
+    min-width: 90px;
+}
+
+.modep-mode-badge::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 999px;
+    background: currentColor;
+    opacity: 0.7;
+}
+
+.modep-mode-badge:hover,
+.modep-mode-badge:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.16);
+    outline: none;
+}
+
+.modep-mode-badge.is-updating {
+    opacity: 0.65;
+    cursor: progress;
+    transform: none;
+    box-shadow: none;
+}
+
+.modep-mode-inherit {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #475569;
+}
+
+.modep-mode-sell {
+    background: linear-gradient(135deg, #ecfdf3, #bbf7d0);
+    color: #166534;
+}
+
+.modep-mode-catalog {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    color: #1d4ed8;
+}
+
+/* ---------- Tooltip (single system, stable) ---------- */
+.modep-help-tip {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 5px;
+    vertical-align: middle;
+}
+
+.modep-help-tip .dashicons {
+    font-size: 17px;
+    color: #98a2b3;
+    cursor: help;
+}
+
+.modep-help-tip::after {
+    content: attr(data-tip);
+    position: absolute;
+    bottom: 135%;
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    background: #2c3338;
+    color: #fff;
+    padding: 10px 12px;
+    border-radius: 10px;
+    font-size: 12px;
+    width: 220px;
+    line-height: 1.5;
+    z-index: 999999;
+    text-align: center;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: all .16s ease;
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.25);
+}
+
+.modep-help-tip::before {
+    content: "";
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: #2c3338;
+    z-index: 999999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all .16s ease;
+}
+
+.modep-help-tip:hover::after,
+.modep-help-tip:hover::before {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+/* Ensure the header doesn't clip the tooltip */
+th.column-modep_catalog_mode {
+    overflow: visible !important;
+    position: relative;
+}
+
+/* ---------- Toast Notifications ---------- */
+#modep-toast-container {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    z-index: 99999;
+}
+
+.modep-toast {
+    background: #111827;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-top: 10px;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, 0.18);
+    transform: translateY(100px);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+.modep-toast.is-active {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.modep-toast-sell {
+    border-left: 4px solid #27ae60;
+}
+
+.modep-toast-catalog {
+    border-left: 4px solid #2980b9;
+}
+
+.modep-toast-inherit {
+    border-left: 4px solid #7f8c8d;
+}
+
+/* Dark-ready touches (inherits WP dark mode if present) */
+@media (prefers-color-scheme: dark) {
+    .modep-card {
+        background: #0b0d12;
+        border-color: #1c1c1f;
+    }
+
+    .modep-sc-row {
+        background: #0f0f12;
+        border-color: #1f2329;
+    }
+
+    .modep-hero {
+        background: linear-gradient(180deg, #0e1116, #0b0d12);
+        border-color: #23262b;
+    }
+
+    .modep-badge {
+        background: #0c1e3e;
+        color: #aad1ff;
+        border-color: #13294b;
+    }
+
+    .modep-code {
+        background: #0a0d14;
+        color: #d8e5ff;
+    }
+}
+/* ---------- FIX: Admin menu alignment (no left padding shift) ---------- */
+#adminmenu #toplevel_page_modefilter-pro>a.menu-top {
+    margin: 0 !important;
+    /* remove our earlier margin that offsets the icon */
+    border-radius: 0 !important;
+    /* keep inline like other WP items */
+}
+
+/* Keep the nice "selected" feel without shifting */
+#adminmenu #toplevel_page_modefilter-pro.wp-has-current-submenu>a.menu-top,
+#adminmenu #toplevel_page_modefilter-pro.current>a.menu-top {
+    background: rgba(11, 102, 255, 0.10) !important;
+    box-shadow: 0 0 0 1px rgba(11, 102, 255, 0.18) inset !important;
+}
+
+/* ---------- 2026: Beautiful content surfaces inside pages ---------- */
+.modep-form .form-table {
+    background: #fff;
+    border: 1px solid #e7edf5;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(16, 24, 40, 0.04);
+    padding: 8px 14px;
+    margin-top: 10px;
+}
+
+.modep-form .form-table th {
+    padding-left: 10px;
+}
+
+.modep-form .form-table td {
+    padding-right: 10px;
+}
+
+.modep-section-body.modep-card {
+    border-radius: 18px;
+}
+
+.modep-section-aside {
+    padding-top: 6px;
+}
+
+/* Make selects/inputs feel modern without breaking WP */
+.modep-select,
+.modep-input,
+.modep-form input[type="text"],
+.modep-form input[type="url"],
+.modep-form input[type="number"],
+.modep-form textarea {
+    border-radius: 12px;
+    border-color: #e5e7eb;
+    box-shadow: none;
+}
+
+.modep-form textarea {
+    padding: 10px 12px;
+}
+/* ==============================
+   Products List: Store Mode badge (2026 polish)
+   ============================== */
+.wp-list-table .column-modep_catalog_mode .modep-mode-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    border-radius: 999px;
+    padding: 6px 12px;
+    min-width: 110px;
+
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+
+    border: 1px solid rgba(15, 23, 42, 0.10);
+    box-shadow: 0 6px 18px rgba(15, 23, 42, 0.10);
+    cursor: pointer;
+
+    transition: transform .12s ease, box-shadow .12s ease, opacity .12s ease;
+}
+
+.wp-list-table .column-modep_catalog_mode .modep-mode-badge:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 22px rgba(15, 23, 42, 0.16);
+}
+
+.wp-list-table .column-modep_catalog_mode .modep-mode-badge.is-updating {
+    opacity: .65;
+    cursor: progress;
+    transform: none;
+    box-shadow: none;
+}
+
+.wp-list-table .column-modep_catalog_mode .modep-mode-badge.is-global {
+    cursor: default;
+    opacity: .95;
+}
+
+/* Auto (formerly inherit) */
+.wp-list-table .column-modep_catalog_mode .modep-mode-auto {
+    background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+    color: #475569;
+}
+
+/* Sell */
+.wp-list-table .column-modep_catalog_mode .modep-mode-sell {
+    background: linear-gradient(135deg, #ecfdf3, #bbf7d0);
+    color: #166534;
+}
+
+/* Catalog */
+.wp-list-table .column-modep_catalog_mode .modep-mode-catalog {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    color: #1d4ed8;
+}
+
+/* Live indicator */
+.modep-idc-indicator {
+    display: inline-flex;
+    margin-left: 8px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(245, 158, 11, 0.12);
+    color: #92400e;
+    border: 1px solid rgba(245, 158, 11, 0.25);
+}

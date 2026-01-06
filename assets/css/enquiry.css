@@ -1,0 +1,35 @@
+.modep-enquiry-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+}
+
+.modep-enquiry-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.65);
+}
+
+.modep-enquiry-dialog {
+    position: relative;
+    max-width: 600px;
+    margin: 5vh auto;
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 25px 60px rgba(15, 23, 42, 0.45);
+}
+
+.modep-enquiry-close {
+    position: absolute;
+    right: 16px;
+    top: 12px;
+    border: 0;
+    background: transparent;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.modep-enquiry-content {
+    margin-top: 12px;
+}
