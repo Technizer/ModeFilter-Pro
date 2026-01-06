@@ -19,7 +19,6 @@ final class MODEP_Shortcode {
 	 */
 	public static function init() : void {
 		add_shortcode( 'modep_filters', [ __CLASS__, 'render' ] );
-		// Backward/compat: catalog-only shortcode alias (Elementor Catalog widget depends on this in some installs).
 		add_shortcode( 'modep_catalog', [ __CLASS__, 'render_catalog' ] );
 	}
 
@@ -344,7 +343,7 @@ final class MODEP_Shortcode {
 				</div>
 
 				<ul class="modep-grid"
-					style="--modep-cols: <?php echo esc_attr( (int) $for_js['columns'] ); ?>;"
+					style="--modep-cols: <?php echo esc_attr( (string) (int) $for_js['columns'] ); ?>;"
 					aria-live="polite"
 					aria-busy="false"></ul>
 
@@ -471,17 +470,17 @@ final class MODEP_Shortcode {
 	 *
 	 * Returns an array of blocks in the form:
 	 * [
-	 *   [
-	 *     'id' => 'categories',
-	 *     'label' => 'Categories',
-	 *     'filter_key' => 'category',
-	 *     'chips' => [
-	 *        ['value' => '', 'label' => 'All', 'active' => true],
-	 *        ['value' => '123', 'label' => 'Shoes (12)', ...],
-	 *     ],
-	 *     'has_more' => true|false
-	 *   ],
-	 *   ...
+	 * [
+	 * 'id' => 'categories',
+	 * 'label' => 'Categories',
+	 * 'filter_key' => 'category',
+	 * 'chips' => [
+	 * ['value' => '', 'label' => 'All', 'active' => true],
+	 * ['value' => '123', 'label' => 'Shoes (12)', ...],
+	 * ],
+	 * 'has_more' => true|false
+	 * ],
+	 * ...
 	 * ]
 	 *
 	 * @param string[] $filters_to_render Canonical ids.
@@ -670,23 +669,23 @@ final class MODEP_Shortcode {
 		}
 
 		$total_terms = count( $terms );
-        $has_more    = ( 'yes' === $show_more && $total_terms > $terms_limit );
+		$has_more    = ( 'yes' === $show_more && $total_terms > $terms_limit );
 
-        // If show_more is disabled, slice hard (performance win).
-        $terms_to_render = ( 'yes' === $show_more )
-            ? $terms
-            : array_slice( $terms, 0, $terms_limit );
+		// If show_more is disabled, slice hard (performance win).
+		$terms_to_render = ( 'yes' === $show_more )
+			? $terms
+			: array_slice( $terms, 0, $terms_limit );
 
-        $chips = [];
-        // All chip (default active state handled by JS; we keep markup consistent).
-        $chips[] = [
-            'value'  => '',
-            'label'  => __( 'All', 'modefilter-pro' ),
-            'active' => true,
-            'hidden' => false,
-        ];
+		$chips = [];
+		// All chip (default active state handled by JS; we keep markup consistent).
+		$chips[] = [
+			'value'  => '',
+			'label'  => __( 'All', 'modefilter-pro' ),
+			'active' => true,
+			'hidden' => false,
+		];
 
-        foreach ( $terms_to_render as $idx => $t ) {
+		foreach ( $terms_to_render as $idx => $t ) {
 			if ( ! ( $t instanceof WP_Term ) ) {
 				continue;
 			}

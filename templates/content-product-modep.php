@@ -72,7 +72,7 @@ $modep_custom_layout = sanitize_text_field( (string) $modep_get( $modep_attrs, '
 // ------------------------------
 $modep_only_catalog = ( 'yes' === (string) $modep_get( $modep_attrs, 'only_catalog', '' ) );
 
-// Elementor / widget visibility controls (keep both old+new keys to be safe)
+// Elementor / widget visibility controls
 $modep_show_image = $modep_yes(
 	$modep_get( $modep_attrs, 'show_image', $modep_get( $modep_attrs, 'show_thumbnail', 'yes' ) ),
 	true
@@ -86,7 +86,7 @@ $modep_excerpt_length_type = in_array( $modep_excerpt_length_type, [ 'words', 'c
 
 $modep_excerpt_length = $modep_clamp_int( $modep_get( $modep_attrs, 'excerpt_length', 20 ), 1, 500, 20 );
 
-// Catalog button / message (Elementor passthrough)
+// Catalog button / message
 $modep_catalog_btn_text = sanitize_text_field(
 	(string) $modep_get( $modep_attrs, 'catalog_button_text', __( 'Enquire Now', 'modefilter-pro' ) )
 );
@@ -98,13 +98,13 @@ $modep_inquire_action = (string) $modep_get( $modep_attrs, 'inquire_action', 'po
 $modep_inquire_action = in_array( $modep_inquire_action, [ 'popup', 'single' ], true ) ? $modep_inquire_action : 'popup';
 
 // ------------------------------
-// Linking controls (keep old + new for compatibility)
+// Linking controls
 // ------------------------------
-$modep_link_mode_raw          = sanitize_key( (string) $modep_get( $modep_attrs, 'link_mode', '' ) );
-$modep_link_target_legacy_raw = sanitize_key( (string) $modep_get( $modep_attrs, 'link_target', '' ) );
+$modep_link_mode_raw = sanitize_key( (string) $modep_get( $modep_attrs, 'link_mode', '' ) );
+$modep_link_mode     = $modep_link_mode_raw;
 
-$modep_link_mode = $modep_link_mode_raw;
 if ( '' === $modep_link_mode ) {
+	$modep_link_target_legacy_raw = sanitize_key( (string) $modep_get( $modep_attrs, 'link_target', '' ) );
 	switch ( $modep_link_target_legacy_raw ) {
 		case 'none':
 			$modep_link_mode = 'none';
@@ -118,8 +118,6 @@ if ( '' === $modep_link_mode ) {
 		case 'button':
 			$modep_link_mode = 'button';
 			break;
-		case 'all':
-		case 'card':
 		default:
 			$modep_link_mode = 'image_title';
 			break;
@@ -160,7 +158,7 @@ $modep_img_html      = $product->get_image( 'woocommerce_thumbnail' );
 $modep_price_html    = $product->get_price_html();
 $modep_stock_status  = (string) $product->get_stock_status();
 
-// Stock badge label.
+// Stock badge label
 $modep_badge_label = '';
 if ( 'outofstock' === $modep_stock_status ) {
 	$modep_badge_label = __( 'Out of stock', 'modefilter-pro' );
@@ -170,7 +168,7 @@ if ( 'outofstock' === $modep_stock_status ) {
 	$modep_badge_label = __( 'Sale', 'modefilter-pro' );
 }
 
-// PayPal promo defaults (off by default; allow enabling via filter).
+// PayPal promo (off by default)
 $modep_show_paypal_promo = (bool) apply_filters( 'modep_show_paypal_promo', false, $product, $modep_attrs );
 $modep_paypal_promo_url  = (string) apply_filters( 'modep_paypal_promo_url', '#', $product, $modep_attrs );
 $modep_paypal_logo_src   = (string) apply_filters( 'modep_paypal_logo_src', '', $product, $modep_attrs );
@@ -221,7 +219,7 @@ if ( '' !== $modep_custom_layout ) {
 
 		$modep_key = sanitize_key( $modep_tok );
 		if ( in_array( $modep_key, $modep_default_parts, true ) ) {
-			$modep_parts_order[]      = $modep_key;
+			$modep_parts_order[]         = $modep_key;
 			$modep_visible[ $modep_key ] = ! $modep_hide;
 		}
 	}
@@ -232,7 +230,7 @@ if ( '' !== $modep_custom_layout ) {
 	}
 }
 
-// Hard enforcement: catalog should not show price unless explicitly in layout tokens.
+// Enforce catalog pricing rule
 if ( $modep_only_catalog && isset( $modep_visible['price'] ) && '' === $modep_custom_layout ) {
 	$modep_visible['price'] = false;
 }

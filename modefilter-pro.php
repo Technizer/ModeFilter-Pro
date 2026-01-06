@@ -190,11 +190,12 @@ function modep_wc_missing_notice() : void {
     if ( ! current_user_can( 'activate_plugins' ) ) {
         return;
     }
-
-    echo '<div class="notice notice-error is-dismissible">';
-    echo '<p><strong>' . esc_html__( 'ModeFilter Pro is almost ready!', 'modefilter-pro' ) . '</strong></p>';
-    echo '<p>' . esc_html__( 'This plugin requires WooCommerce to be installed and active. Please activate WooCommerce to start using ModeFilter Pro.', 'modefilter-pro' ) . '</p>';
-    echo '</div>';
+    ?>
+    <div class="notice notice-error is-dismissible">
+        <p><strong><?php esc_html_e( 'ModeFilter Pro is almost ready!', 'modefilter-pro' ); ?></strong></p>
+        <p><?php esc_html_e( 'This plugin requires WooCommerce to be installed and active. Please activate WooCommerce to start using ModeFilter Pro.', 'modefilter-pro' ); ?></p>
+    </div>
+    <?php
 }
 
 /** ------------------------------------------------------------------------

@@ -50,29 +50,21 @@ final class MODEP_Ajax {
 	 * @return mixed|null
 	 */
 	private static function post_raw_allowed( string $key ) {
-		$key = sanitize_key( $key );
-
 		if ( ! in_array( $key, self::ALLOWED_POST_KEYS, true ) ) {
 			return null;
 		}
 
-		/**
-		 * First try array form (e.g. cat_ids[]=1&cat_ids[]=2).
-		 * FILTER_REQUIRE_ARRAY returns null if not present or not an array.
-		 */
-		$arr = filter_input( INPUT_POST, $key, FILTER_UNSAFE_RAW, FILTER_REQUIRE_ARRAY );
-		if ( is_array( $arr ) ) {
-			// Nonce is verified in entrypoint (check_ajax_referer).
-			return wp_unslash( $arr );
-		}
-
-		$val = filter_input( INPUT_POST, $key, FILTER_UNSAFE_RAW );
-		if ( null === $val ) {
+		if ( ! isset( $_POST[ $key ] ) ) {
 			return null;
 		}
 
-		// Nonce is verified in entrypoint (check_ajax_referer).
-		return wp_unslash( $val );
+		$raw = wp_unslash( $_POST[ $key ] );
+
+		if ( is_array( $raw ) ) {
+			return map_deep( $raw, 'sanitize_text_field' );
+		}
+
+		return sanitize_text_field( (string) $raw );
 	}
 
 	private static function read_scalar( $value ) : string {
@@ -98,31 +90,18 @@ final class MODEP_Ajax {
 			return '';
 		}
 		$num = (float) $raw;
-		if ( $num < 0 ) {
-			$num = 0;
-		}
-		return $num;
+		return ( $num < 0 ) ? 0 : $num;
 	}
 
 	private static function parse_rating_min( $value ) : int {
-		if ( ! is_scalar( $value ) ) {
-			return 0;
-		}
-		$raw = absint( (string) $value );
-		if ( $raw < 1 || $raw > 5 ) {
-			return 0;
-		}
-		return $raw;
+		$raw = absint( self::read_scalar( $value ) );
+		return ( $raw < 1 || $raw > 5 ) ? 0 : $raw;
 	}
 
 	private static function sanitize_shortcode_attrs( $raw ) : array {
 		if ( is_string( $raw ) ) {
 			$decoded = json_decode( $raw, true );
-			if ( is_array( $decoded ) ) {
-				$raw = $decoded;
-			} else {
-				$raw = [];
-			}
+			$raw     = is_array( $decoded ) ? $decoded : [];
 		}
 
 		if ( ! is_array( $raw ) ) {
@@ -130,7 +109,6 @@ final class MODEP_Ajax {
 		}
 
 		$clean = [];
-
 		foreach ( $raw as $key => $value ) {
 			$clean_key = is_string( $key ) ? sanitize_key( $key ) : (string) $key;
 
@@ -139,24 +117,13 @@ final class MODEP_Ajax {
 				continue;
 			}
 
-			$scalar = is_scalar( $value ) ? (string) $value : '';
-			$clean[ $clean_key ] = sanitize_text_field( $scalar );
+			$clean[ $clean_key ] = sanitize_text_field( is_scalar( $value ) ? (string) $value : '' );
 		}
 
 		if ( isset( $raw['filters'] ) && is_array( $raw['filters'] ) ) {
-			$clean['filters'] = array_values(
-				array_filter(
-					array_map(
-						static function ( $v ) : string {
-							return sanitize_key( is_scalar( $v ) ? (string) $v : '' );
-						},
-						$raw['filters']
-					)
-				)
-			);
+			$clean['filters'] = array_values( array_filter( array_map( 'sanitize_key', $raw['filters'] ) ) );
 		}
 
-		// Keep includes/excludes arrays as-is (they are parsed/absint later).
 		if ( isset( $raw['includes'] ) && is_array( $raw['includes'] ) ) {
 			$clean['includes'] = $raw['includes'];
 		}
@@ -177,7 +144,7 @@ final class MODEP_Ajax {
 			}
 		} else {
 			$csv  = strtolower( trim( self::read_scalar( $raw ) ) );
-			$bits = ( '' === $csv ) ? [] : array_filter( array_map( 'trim', explode( ',', $csv ) ) );
+			$bits = array_filter( array_map( 'trim', explode( ',', $csv ) ) );
 			foreach ( $bits as $b ) {
 				$list[] = sanitize_key( $b );
 			}
@@ -185,26 +152,11 @@ final class MODEP_Ajax {
 
 		$out = [];
 		foreach ( $list as $item ) {
-			switch ( $item ) {
-				case 'category':
-				case 'categories':
-					$out[] = 'categories';
-					break;
-				case 'tag':
-				case 'tags':
-					$out[] = 'tags';
-					break;
-				case 'brand':
-				case 'brands':
-					$out[] = 'brands';
-					break;
-				case 'price':
-					$out[] = 'price';
-					break;
-				case 'rating':
-					$out[] = 'rating';
-					break;
-			}
+			if ( in_array( $item, [ 'category', 'categories' ], true ) ) { $out[] = 'categories'; }
+			elseif ( in_array( $item, [ 'tag', 'tags' ], true ) ) { $out[] = 'tags'; }
+			elseif ( in_array( $item, [ 'brand', 'brands' ], true ) ) { $out[] = 'brands'; }
+			elseif ( 'price' === $item ) { $out[] = 'price'; }
+			elseif ( 'rating' === $item ) { $out[] = 'rating'; }
 		}
 
 		return array_values( array_unique( $out ) );
@@ -253,7 +205,13 @@ final class MODEP_Ajax {
 	}
 
 	public static function get_products() : void {
-		check_ajax_referer( self::NONCE_KEY, '_nonce' );
+		if ( ! isset( $_POST['_nonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['_nonce'] ), self::NONCE_KEY ) ) {
+			wp_send_json_error( [ 'message' => 'Security check failed' ], 403 );
+		}
+
+		if ( ! current_user_can( 'read' ) ) {
+			wp_send_json_error( [ 'message' => 'Permission denied' ], 403 );
+		}
 
 		if ( ! class_exists( 'WooCommerce' ) ) {
 			wp_send_json_error( [ 'message' => __( 'WooCommerce is not active.', 'modefilter-pro' ) ] );
@@ -261,11 +219,9 @@ final class MODEP_Ajax {
 
 		$attrs_raw = self::post_raw_allowed( 'shortcode_attrs' );
 		$attrs     = self::sanitize_shortcode_attrs( $attrs_raw );
-
-		$attrs = (array) apply_filters( 'modep_ajax_sanitized_attrs', $attrs, $attrs_raw );
+		$attrs     = (array) apply_filters( 'modep_ajax_sanitized_attrs', $attrs, $attrs_raw );
 
 		$only_catalog = ( isset( $attrs['only_catalog'] ) && 'yes' === (string) $attrs['only_catalog'] );
-
 		$enabled_filters = self::get_enabled_filters( $attrs );
 
 		$page_raw = self::post_raw_allowed( 'page' );
