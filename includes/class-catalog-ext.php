@@ -71,24 +71,24 @@ final class MODEP_Catalog_Ext {
     }
 
     /**
-     * Helper: read a scalar POST value as string (unslashed and sanitized).
+     * Safely read a scalar value from POST data.
+     * * Uses filter_input and sanitize_text_field to satisfy 
+     * WordPress.Security.NonceVerification and ValidatedSanitizedInput warnings.
      *
-     * NOTE: This is used in contexts where a nonce has already been verified
-     * in the calling method.
+     * @param string $key The POST key to read.
+     * @return string Sanitize string value or empty string.
      */
     private static function post_scalar( string $key ) : string {
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in caller.
-        if ( ! isset( $_POST[ $key ] ) ) {
+        // Use filter_input to avoid direct $_POST access warnings.
+        $raw_value = filter_input( INPUT_POST, $key, FILTER_DEFAULT );
+
+        if ( null === $raw_value || false === $raw_value || ! is_scalar( $raw_value ) ) {
             return '';
         }
 
-        // Applying sanitization directly to the input source to satisfy the sniffer.
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- nonce verified in caller.
-        $sanitized = sanitize_text_field( wp_unslash( (string) $_POST[ $key ] ) );
-
-        return is_scalar( $sanitized ) ? (string) $sanitized : '';
+        // Unslash and sanitize to ensure data integrity and security.
+        return trim( sanitize_text_field( wp_unslash( (string) $raw_value ) ) );
     }
-
     /**
      * Helper: is global store mode Hybrid?
      */

@@ -116,22 +116,35 @@ final class MODEP_Admin_UI {
         echo '</div>';
     }
 
+    /**
+     * Render a consistent admin badge (e.g., "Pro", "New", "Active")
+     */
+    public static function badge( string $text, string $type = 'primary' ) : void {
+        printf( 
+            '<span class="modep-badge modep-badge--%s">%s</span>', 
+            esc_attr( $type ), 
+            esc_html( $text ) 
+        );
+    }
+
+    /**
+     * Optimized Section Card
+     * Used for grouping related settings together.
+     */
     public static function section_card_open( string $heading, string $desc = '' ) : void {
-        echo '<section class="modep-section">';
-        echo '  <div class="modep-section-aside">';
-        echo '    <h3 class="modep-section-title">' . esc_html( $heading ) . '</h3>';
-
+        echo '<div class="modep-section-wrapper">';
+        echo '  <div class="modep-section-info">';
+        echo '    <h3 class="modep-section-heading">' . esc_html( $heading ) . '</h3>';
         if ( $desc ) {
-            echo '    <p class="modep-section-desc">' . esc_html( $desc ) . '</p>';
+            echo '    <p class="modep-section-subtext">' . esc_html( $desc ) . '</p>';
         }
-
         echo '  </div>';
-        echo '  <div class="modep-section-body modep-card modep-card-padded">';
+        echo '  <div class="modep-section-content modep-card">';
     }
 
     public static function section_card_close() : void {
         echo '  </div>';
-        echo '</section>';
+        echo '</div>';
     }
 
     public static function code( string $content ) : void {
@@ -139,54 +152,34 @@ final class MODEP_Admin_UI {
     }
 
     /**
-     * Render an admin button link.
-     *
-     * @param string $label   Button label.
-     * @param string $url     URL.
-     * @param bool   $primary Primary button?
-     * @param array  $attrs   Extra HTML attributes (key => value).
+     * Improved Button Helper
+     * Supports arbitrary data attributes and target settings.
      */
     public static function button( string $label, string $url = '#', bool $primary = true, array $attrs = [] ) : void {
-        $classes = $primary ? 'button button-primary modep-btn' : 'button modep-btn';
-
-        // Build safe attribute string.
-        $attr_string = '';
-
-        foreach ( $attrs as $k => $v ) {
-            if ( '' === (string) $k ) {
-                continue;
-            }
-
-            $attr_string .= sprintf(
-                ' %1$s="%2$s"',
-                esc_attr( (string) $k ),
-                esc_attr( (string) $v )
-            );
+        $classes = $primary ? 'button button-primary modep-btn--main' : 'button modep-btn--secondary';
+        
+        $html_attrs = '';
+        foreach ( $attrs as $key => $val ) {
+            // Individual attributes are properly escaped here.
+            $html_attrs .= sprintf( ' %s="%s"', esc_attr( $key ), esc_attr( (string) $val ) );
         }
 
-        // To satisfy WordPress.Security.EscapeOutput.OutputNotEscaped, 
-        // we use wp_kses to process the attribute string before output.
-        // This ensures the content is safe while keeping your custom attributes.
-        $allowed_html = [
-            'a' => [
-                'class'  => true,
-                'href'   => true,
-                'id'     => true,
-                'target' => true,
-                'rel'    => true,
-                'title'  => true,
-                'role'   => true,
-                // Allow data attributes by using a wildcard pattern if supported, 
-                // or specific ones used in your project.
-            ],
-        ];
-
         printf(
-            '<a class="%1$s" href="%2$s"%3$s>%4$s</a>',
+            '<a class="%s" href="%s" %s>%s</a>',
             esc_attr( $classes ),
             esc_url( $url ),
-            wp_kses( $attr_string, $allowed_html ),
+            $html_attrs, // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
             esc_html( $label )
         );
+    }
+
+    /**
+     * Helper for displaying a shortcode that can be clicked to copy.
+     */
+    public static function shortcode_display( string $code ) : void {
+        echo '<div class="modep-shortcode-box">';
+        echo '  <code>' . esc_html( $code ) . '</code>';
+        echo '  <button class="modep-copy-btn" data-copy="' . esc_attr( $code ) . '">' . esc_html__( 'Copy', 'modefilter-pro' ) . '</button>';
+        echo '</div>';
     }
 }

@@ -1,25 +1,39 @@
 <?php
+/**
+ * ModeFilter Pro — Admin Dashboard
+ * File: includes/admin/class-admin-dashboard.php
+ */
+
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
 final class MODEP_Admin_Dashboard {
 
-    // Optionally allow themes/addons to filter these URLs.
+    /**
+     * Filterable documentation URL.
+     */
     public static function docs_url() {
-        // Filter is correctly prefixed
         return apply_filters( 'modep_docs_url', 'https://szeeshanali.com/modefilter-pro/docs' );
     }
 
+    /**
+     * Filterable YouTube channel URL.
+     */
     public static function yt_url() {
-        // Filter is correctly prefixed
         return apply_filters( 'modep_yt_url', 'https://www.youtube.com/@modefilter-pro' );
     }
 
+    /**
+     * URL to the internal Shortcode Builder page.
+     */
     public static function builder_url() {
         return admin_url( 'admin.php?page=modefilter-pro-builder' );
     }
 
+    /**
+     * Main Render Method.
+     */
     public static function render() : void {
         MODEP_Admin_UI::page_open(
             __( 'ModeFilter Pro — Dashboard', 'modefilter-pro' ),
@@ -28,35 +42,32 @@ final class MODEP_Admin_Dashboard {
 
         MODEP_Admin_UI::tabs( 'dashboard' );
 
-        // Hero.
-        // stf-hero -> modep-hero
+        // --- Hero Section ---
         echo '<div class="modep-hero">';
-        // stf-hero__cta -> modep-hero__cta
-        echo '<div class="modep-hero__cta">';
-        MODEP_Admin_UI::button(
-            __( 'Open Shortcode Builder', 'modefilter-pro' ),
-            self::builder_url(),
-            true,
-            // stf-open-builder -> modep-open-builder
-            [ 'id' => 'modep-open-builder' ]
-        );
-        echo '&nbsp;';
-        MODEP_Admin_UI::button(
-            __( 'View Documentation', 'modefilter-pro' ),
-            self::docs_url(),
-            false,
-            [
-                'target' => '_blank',
-                'rel'    => 'noopener',
-            ]
-        );
-        echo '</div>';
+            echo '<div class="modep-hero__cta">';
+                MODEP_Admin_UI::button(
+                    __( 'Open Shortcode Builder', 'modefilter-pro' ),
+                    self::builder_url(),
+                    true,
+                    [ 'id' => 'modep-open-builder' ]
+                );
+                echo '&nbsp;';
+                MODEP_Admin_UI::button(
+                    __( 'View Documentation', 'modefilter-pro' ),
+                    self::docs_url(),
+                    false,
+                    [
+                        'target' => '_blank',
+                        'rel'    => 'noopener',
+                    ]
+                );
+            echo '</div>';
         echo '</div>';
 
-        // 3 columns: Docs, Tutorials, Shortcodes.
+        // --- 3-Column Resource Grid ---
         MODEP_Admin_UI::grid_open( 3 );
 
-        // Docs.
+        // 1. Documentation Card
         ob_start();
         ?>
         <p><?php esc_html_e( 'Start with quick setup, presets, and best practices for speed & UX.', 'modefilter-pro' ); ?></p>
@@ -68,17 +79,14 @@ final class MODEP_Admin_Dashboard {
         <?php
         $docs_body = ob_get_clean();
 
-        MODEP_Admin_UI::card(
-            [
-                'badge'  => __( 'Docs', 'modefilter-pro' ),
-                'title'  => __( 'Documentation', 'modefilter-pro' ),
-                'body'   => $docs_body,
-                // stf-link -> modep-link
-                'footer' => '<a class="modep-link" href="' . esc_url( self::docs_url() ) . '" target="_blank" rel="noopener">' . esc_html__( 'Open full docs →', 'modefilter-pro' ) . '</a>',
-            ]
-        );
+        MODEP_Admin_UI::card([
+            'badge'  => __( 'Docs', 'modefilter-pro' ),
+            'title'  => __( 'Documentation', 'modefilter-pro' ),
+            'body'   => $docs_body,
+            'footer' => '<a class="modep-link" href="' . esc_url( self::docs_url() ) . '" target="_blank" rel="noopener">' . esc_html__( 'Open full docs →', 'modefilter-pro' ) . '</a>',
+        ]);
 
-        // Tutorials.
+        // 2. Tutorials Card (YouTube)
         ob_start();
         ?>
         <div class="modep-media">
@@ -96,17 +104,14 @@ final class MODEP_Admin_Dashboard {
         <?php
         $yt_body = ob_get_clean();
 
-        MODEP_Admin_UI::card(
-            [
-                'badge'  => __( 'Video', 'modefilter-pro' ),
-                'title'  => __( 'YouTube Tutorials', 'modefilter-pro' ),
-                'body'   => $yt_body,
-                // stf-link -> modep-link
-                'footer' => '<a class="modep-link" href="' . esc_url( self::yt_url() ) . '" target="_blank" rel="noopener">' . esc_html__( 'Visit channel →', 'modefilter-pro' ) . '</a>',
-            ]
-        );
+        MODEP_Admin_UI::card([
+            'badge'  => __( 'Video', 'modefilter-pro' ),
+            'title'  => __( 'YouTube Tutorials', 'modefilter-pro' ),
+            'body'   => $yt_body,
+            'footer' => '<a class="modep-link" href="' . esc_url( self::yt_url() ) . '" target="_blank" rel="noopener">' . esc_html__( 'Visit channel →', 'modefilter-pro' ) . '</a>',
+        ]);
 
-        // Quick shortcodes.
+        // 3. Quick Shortcodes Card
         ob_start();
         ?>
         <p><?php esc_html_e( 'Copy basics and paste anywhere.', 'modefilter-pro' ); ?></p>
@@ -132,26 +137,23 @@ final class MODEP_Admin_Dashboard {
             <div class="modep-sc-row">
                 <code>[modep_filters only_catalog="yes"]</code>
                 <button class="button modep-copy" data-copy='[modep_filters only_catalog="yes"]'>
-                    <?php esc_html_e( 'Copy (Catalog only)', 'modefilter-pro' ); ?>
+                    <?php esc_html_e( 'Copy (Catalog)', 'modefilter-pro' ); ?>
                 </button>
             </div>
         </div>
         <?php
         $sc_body = ob_get_clean();
 
-        MODEP_Admin_UI::card(
-            [
-                'badge'  => __( 'Shortcodes', 'modefilter-pro' ),
-                'title'  => __( 'Quick Shortcodes', 'modefilter-pro' ),
-                'body'   => $sc_body,
-                // stf-link -> modep-link
-                'footer' => '<a class="modep-link" href="' . esc_url( admin_url( 'admin.php?page=modefilter-pro-builder' ) ) . '">' . esc_html__( 'Open Shortcode Builder →', 'modefilter-pro' ) . '</a>',
-            ]
-        );
+        MODEP_Admin_UI::card([
+            'badge'  => __( 'Shortcodes', 'modefilter-pro' ),
+            'title'  => __( 'Quick Shortcodes', 'modefilter-pro' ),
+            'body'   => $sc_body,
+            'footer' => '<a class="modep-link" href="' . esc_url( self::builder_url() ) . '">' . esc_html__( 'Open Shortcode Builder →', 'modefilter-pro' ) . '</a>',
+        ]);
 
         MODEP_Admin_UI::grid_close();
 
-        // === Shop vs Catalog Usage & ModeFilter behaviour explanation ===.
+        // --- Usage Guide Section (Hybrid Logic) ---
         MODEP_Admin_UI::grid_open( 1 );
 
         ob_start();
@@ -160,20 +162,20 @@ final class MODEP_Admin_Dashboard {
 
         <div class="modep-columns modep-columns--2">
             <div class="modep-columns__col">
-                <h3><?php esc_html_e( 'ModeFilter Shop Products (Elementor widget)', 'modefilter-pro' ); ?></h3>
+                <h3><?php esc_html_e( 'ModeFilter Shop Products', 'modefilter-pro' ); ?></h3>
                 <ul class="modep-list">
                     <li><?php esc_html_e( 'Shows only sellable products — catalog-mode products are automatically excluded.', 'modefilter-pro' ); ?></li>
                     <li><?php esc_html_e( 'Uses normal WooCommerce pricing and Add to Cart behaviour.', 'modefilter-pro' ); ?></li>
-                    <li><?php esc_html_e( 'Ideal for your main shop grids, category landing pages and sales layouts.', 'modefilter-pro' ); ?></li>
+                    <li><?php esc_html_e( 'Ideal for your main shop grids and sales layouts.', 'modefilter-pro' ); ?></li>
                 </ul>
             </div>
 
             <div class="modep-columns__col">
-                <h3><?php esc_html_e( 'ModeFilter Catalog Products (Elementor widget)', 'modefilter-pro' ); ?></h3>
+                <h3><?php esc_html_e( 'ModeFilter Catalog Products', 'modefilter-pro' ); ?></h3>
                 <ul class="modep-list">
                     <li><?php esc_html_e( 'Shows only catalog-mode products (items flagged as not directly sellable).', 'modefilter-pro' ); ?></li>
-                    <li><?php esc_html_e( 'Replaces Add to Cart with your Enquire button / popup as configured in ModeFilter Pro.', 'modefilter-pro' ); ?></li>
-                    <li><?php esc_html_e( 'Perfect for quotation-based, enquiry-only or showcase product ranges.', 'modefilter-pro' ); ?></li>
+                    <li><?php esc_html_e( 'Replaces Add to Cart with your Enquire button or Popup.', 'modefilter-pro' ); ?></li>
+                    <li><?php esc_html_e( 'Perfect for quotation-based or showcase product ranges.', 'modefilter-pro' ); ?></li>
                 </ul>
             </div>
         </div>
@@ -181,30 +183,26 @@ final class MODEP_Admin_Dashboard {
         <hr class="modep-separator" />
 
         <h3><?php esc_html_e( 'Store Mode (Sell / Catalog / Hybrid)', 'modefilter-pro' ); ?></h3>
-<ul class="modep-list">
-    <li><?php esc_html_e( 'Sell: every product behaves like normal WooCommerce (Add to Cart, pricing, checkout).', 'modefilter-pro' ); ?></li>
-    <li><?php esc_html_e( 'Catalog: every product behaves as enquiry-only (no Add to Cart).', 'modefilter-pro' ); ?></li>
-    <li><?php esc_html_e( 'Hybrid: mix both — products are Sellable by default, and you can switch specific products to Catalog from Products → All Products.', 'modefilter-pro' ); ?></li>
-</ul>
+        <ul class="modep-list">
+            <li><?php esc_html_e( 'Sell: Every product behaves like normal WooCommerce (Cart + Checkout).', 'modefilter-pro' ); ?></li>
+            <li><?php esc_html_e( 'Catalog: Every product behaves as enquiry-only (No Cart).', 'modefilter-pro' ); ?></li>
+            <li><?php esc_html_e( 'Hybrid: Mix both — Products are Sellable by default, and you can switch specific items to Catalog from the Product List.', 'modefilter-pro' ); ?></li>
+        </ul>
 
-<p class="modep-note">
-    <?php esc_html_e( 'Tip: the Product Mode toggle column only appears when Store Mode is set to Hybrid.', 'modefilter-pro' ); ?>
-</p>
-
+        <p class="modep-note">
+            <?php esc_html_e( 'Tip: the Product Mode toggle column only appears when Store Mode is set to Hybrid.', 'modefilter-pro' ); ?>
+        </p>
         <?php
         $usage_body = ob_get_clean();
 
-        MODEP_Admin_UI::card(
-            [
-                'badge'  => __( 'Usage', 'modefilter-pro' ),
-                'title'  => __( 'Shop vs Catalog Behaviour & Modes', 'modefilter-pro' ),
-                'body'   => $usage_body,
-                'footer' => '',
-            ]
-        );
+        MODEP_Admin_UI::card([
+            'badge'  => __( 'Usage', 'modefilter-pro' ),
+            'title'  => __( 'Shop vs Catalog Behaviour & Modes', 'modefilter-pro' ),
+            'body'   => $usage_body,
+            'footer' => '',
+        ]);
 
         MODEP_Admin_UI::grid_close();
-
         MODEP_Admin_UI::page_close();
     }
 }
