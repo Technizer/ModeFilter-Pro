@@ -1,18 +1,18 @@
 === ModeFilter Pro ===
 Contributors: szeeshanali
 Tags: woocommerce, catalog-mode, product-filter, shop-mode, elementor widgets
-Requires at least: 6.0
-Tested up to: 6.9
+Requires at least: 6.2
+Tested up to: 7.0.2
 Requires PHP: 7.4
-Stable tag: 1.0.5
+Stable tag: 1.0.7
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Modern WooCommerce filters with chip-based UI, AJAX product grid, Elementor widgets, mobile-friendly sidebar, and the unique Shop ⇄ Catalog Toggle Mode.
+Modern multi-style WooCommerce filters, configurable AJAX loaders, Elementor widgets, a mobile-friendly sidebar, and the unique Shop ⇄ Catalog Toggle Mode.
 
 == Description ==
 
-**ModeFilter Pro** delivers a high-performance, chip-based WooCommerce filtering system combined with an exclusive **Shop ⇄ Catalog Toggle Mode** — a key feature for modern e-commerce.
+**ModeFilter Pro** delivers a high-performance, multi-style WooCommerce filtering system combined with an exclusive **Shop ⇄ Catalog Toggle Mode** — a key feature for modern e-commerce.
 
 This plugin allows you to define and switch your store's display mode dynamically:
 
@@ -24,8 +24,9 @@ This makes ModeFilter Pro perfect for hybrid stores, B2B/wholesalers, or any sho
 ### 💎 Why store owners love ModeFilter Pro
 
 * **Exclusive Shop/Catalog Toggle:** Switch display modes globally or on individual products.
-* **Modern Chip Filters:** Beautiful, multi-select filters for a better user experience.
+* **Multiple Filter Styles:** Chips, checkboxes, radios, toggles, and hierarchical category trees.
 * **Instant AJAX Filtering:** Products load instantly without a page reload.
+* **Configurable Loaders:** Spinner, skeletons, dots, pulse, custom image, or no visual loader.
 * **Built for Elementor:** Dedicated widgets for quick design and setup.
 * **"Notify Me" System:** Optional, built-in stock alert feature (no external services).
 * **Full Compatibility:** Works with all standard WooCommerce themes and caching plugins.
@@ -41,21 +42,22 @@ Easily switch your store's primary function. Control the display at three levels
 * **Individual Products/Categories/Tags:** Override the global setting for specific items.
 * **Elementor/Shortcode:** Toggle the mode based on the current page context.
 
-### 🟢 2. Chip-Based Multi-Select Filters
-A modern alternative to bulky checkboxes and dropdowns:
-* Categories, Tags, Brands, and other attribute filters.
+### 🟢 2. Flexible Filter Presentations
+Choose chips, checkboxes, radio buttons, toggle switches, or a parent/child category tree:
+* Categories, Tags, Brands, Price, Rating, and product-attribute filters.
 * Sleek, mobile-friendly design.
 * Instantaneous filtering results via AJAX.
 
 ### 🟣 3. AJAX Product Grid
 * The product grid updates instantly with no page reload.
 * Supports Load More or traditional numeric pagination.
+* Includes spinner, skeleton, dots, pulse, custom-image, and no-loader modes.
 * Uses the native WooCommerce product loop for maximum theme compatibility.
 
 ### 🟠 4. Elementor Widget Integration
 Includes two dedicated widgets for seamless design:
-* **Filter Widget:** For adding the filter chips and mobile sidebar.
-* **Grid Widget:** For displaying the filtered product results.
+* **ModeFilter Products:** Shop-mode products with filters and grid controls.
+* **ModeFilter Catalog Products:** Catalog-mode products with enquiry controls.
 
 ### 🟡 5. Out-of-Stock “Notify Me” System
 An integrated tool to capture lost sales:
@@ -75,10 +77,10 @@ An integrated tool to capture lost sales:
 Use the shortcode to embed the filtered product grid on any page:
 
 ### Basic:
-`[mode_filter]`
+`[modep_filters]`
 
-### With attributes (Note: use `mode_filter` slug in code):
-`[mode_filter cat_in="helmets,45" tag_in="summer,clearance" brand_in="arai,7" columns="3" per_page="12" sort="price_asc"]`
+### With attributes:
+`[modep_filters cat_in="helmets,45" tag_in="summer,clearance" brand_in="arai,7" columns="3" per_page="12" sort="price_asc"]`
 
 ### Attribute Reference
 
@@ -91,6 +93,10 @@ Use the shortcode to embed the filtered product grid on any page:
 | `per_page` | Products per page (default: 9) |
 | `sort` | default, price_asc, price_desc, in_stock, preorder, out_of_stock |
 | `only_catalog` | `yes` to show only catalog-mode products |
+| `filter_style` | `global`, `chips`, `checkboxes`, `radios`, `toggles`, or `hierarchical` |
+| `category_hierarchy` | `global`, `yes`, or `no` |
+| `loader_style` | `global`, `spinner`, `skeleton`, `dots`, `pulse`, `custom`, or `none` |
+| `loader_image` | Custom image/GIF/SVG URL |
 
 ---
 
@@ -99,7 +105,8 @@ Use the shortcode to embed the filtered product grid on any page:
 The Elementor integration provides full control over the query and styling:
 
 * **Query Controls:** Filter product set, define sorting, and manage pagination.
-* **Style Controls:** Customize card appearance, chip colors, typography, and grid layout.
+* **Presentation Controls:** Choose the filter style, category hierarchy, AJAX loader, and custom loader media.
+* **Style Controls:** Customize card appearance, filter colors, typography, and grid layout.
 
 ---
 
@@ -135,7 +142,7 @@ mode-filter/
 
 ## 📸 Screenshots
 
-1. Chip-based filter UI
+1. Multiple filter presentations
 2. AJAX product grid
 3. Elementor widget – Query tab
 4. Elementor widget – Style tab
@@ -147,7 +154,7 @@ mode-filter/
 == Frequently Asked Questions ==
 
 = Does ModeFilter Pro work without Elementor? =
-Yes. The `[mode_filter]` shortcode works with any theme or page builder. Elementor integration is provided for visual layout control.
+Yes. The `[modep_filters]` shortcode works with any theme or page builder. Elementor integration is provided for visual layout control.
 
 = Does ModeFilter Pro work with caching plugins? =
 Yes. All AJAX endpoints are uncached, and filtering is designed not to break page caching. Compatible with WP Rocket, LiteSpeed Cache, and others.
@@ -165,6 +172,24 @@ No. ModeFilter Pro does not send any data externally. No telemetry, no tracking,
 ---
 
 ## 📝 Changelog
+
+### 1.0.7
+* Added six complete Template Kits with distinct layouts, filters, cards, palettes, loaders, and pagination.
+* Fixed kit rendering in shortcodes, the shortcode builder, and both Elementor widgets.
+* Added representative visual thumbnails for every kit.
+
+### 1.0.6
+* Added a background effective-mode index for faster paginated filtering.
+* Fixed category, tag, and brand include scopes in AJAX requests.
+* Added working In Stock, Pre-Order/Backorder, and Out of Stock filtering.
+* Fixed duplicate catalog hooks and inconsistent Elementor preset handling.
+* Added an accessible skeleton loader and conditional frontend asset loading.
+* Added chips, checkboxes, radios, toggles, and hierarchical category filters.
+* Added a spinning default AJAX loader plus skeleton, dots, pulse, custom-image, and no-loader options.
+* Added matching controls to global settings, the shortcode builder, and both Elementor widgets.
+* Added a respectful WordPress.org review link and dismissible review prompt.
+* Hardened stock subscriptions with throttling, unsubscribe links, and privacy tools.
+* Updated compatibility information for WordPress 7.0.2.
 
 ### 1.0.5
 * Initial stable release for WordPress.org

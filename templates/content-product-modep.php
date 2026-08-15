@@ -343,6 +343,15 @@ if ( 'none' === $modep_link_mode ) {
 								data-product-title="<?php echo esc_attr( $modep_product_title ); ?>">
 							<?php esc_html_e( 'Notify Me', 'modefilter-pro' ); ?>
 						</button>
+						<form class="modep-stock-form" data-product-id="<?php echo esc_attr( (string) $modep_product_id ); ?>" hidden>
+							<label>
+								<span class="screen-reader-text"><?php esc_html_e( 'Email address', 'modefilter-pro' ); ?></span>
+								<input type="email" name="email" required autocomplete="email" placeholder="<?php esc_attr_e( 'Your email address', 'modefilter-pro' ); ?>">
+							</label>
+							<input class="modep-hp" type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+							<button type="submit"><?php esc_html_e( 'Notify me', 'modefilter-pro' ); ?></button>
+							<p class="modep-stock-form__status" role="status" aria-live="polite"></p>
+						</form>
 					<?php else : ?>
 						<div class="modep-add-to-cart">
 							<?php woocommerce_template_loop_add_to_cart(); ?>

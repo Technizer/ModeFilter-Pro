@@ -178,53 +178,52 @@ final class MODEP_Catalog_Ext {
      * AJAX: toggle product sellable/catalog (Hybrid only).
      */
     public static function ajax_toggle_mode() : void {
-        check_ajax_referer( 'modep_toggle_mode', 'nonce' );
+	check_ajax_referer( 'modep_toggle_mode', 'nonce' );
 
-        if ( ! self::is_hybrid_store() ) {
-            wp_send_json_error(
-                [ 'message' => __( 'This action is only available in Hybrid store mode.', 'modefilter-pro' ) ]
-            );
-        }
+	if ( ! self::is_hybrid_store() ) {
+		wp_send_json_error(
+			[ 'message' => __( 'This action is only available in Hybrid store mode.', 'modefilter-pro' ) ]
+		);
+	}
 
-        // Only read required keys (do not process whole $_POST).
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_ajax_referer() above.
-        $post_id = isset( $_POST['post_id'] ) ? absint( wp_unslash( $_POST['post_id'] ) ) : 0;
-        // phpcs:ignore WordPress.Security.NonceVerification.Missing -- check_ajax_referer() above.
-        $mode = isset( $_POST['mode'] ) ? sanitize_key( wp_unslash( (string) $_POST['mode'] ) ) : '';
+	// ✅ Read required keys safely (no direct $_POST access).
+	$post_id = absint( self::post_scalar( 'post_id' ) );
+	$mode    = sanitize_key( self::post_scalar( 'mode' ) );
 
-        if ( ! $post_id || ! current_user_can( 'edit_product', $post_id ) ) {
-            wp_send_json_error(
-                [ 'message' => __( 'Permission denied.', 'modefilter-pro' ) ]
-            );
-        }
+	if ( ! $post_id || ! current_user_can( 'edit_product', $post_id ) ) {
+		wp_send_json_error(
+			[ 'message' => __( 'Permission denied.', 'modefilter-pro' ) ]
+		);
+	}
 
-        if ( ! in_array( $mode, [ 'sell', 'catalog' ], true ) ) {
-            $mode = 'sell';
-        }
+	if ( ! in_array( $mode, [ 'sell', 'catalog' ], true ) ) {
+		$mode = 'sell';
+	}
 
-        // Default sell: keep DB clean (delete meta for sell).
-        if ( 'sell' === $mode ) {
-            delete_post_meta( $post_id, self::META_OVERRIDE );
-        } else {
-            update_post_meta( $post_id, self::META_OVERRIDE, 'catalog' );
-        }
+	// Default sell: keep DB clean (delete meta for sell).
+	if ( 'sell' === $mode ) {
+		delete_post_meta( $post_id, self::META_OVERRIDE );
+	} else {
+		update_post_meta( $post_id, self::META_OVERRIDE, 'catalog' );
+	}
 
-        // Counts changed, clear cache.
-        self::clear_counts_cache();
+	// Counts changed, clear cache.
+	self::clear_counts_cache();
 
-        $labels = [
-            'sell'    => __( 'Sellable', 'modefilter-pro' ),
-            'catalog' => __( 'Catalog', 'modefilter-pro' ),
-        ];
+	$labels = [
+		'sell'    => __( 'Sellable', 'modefilter-pro' ),
+		'catalog' => __( 'Catalog', 'modefilter-pro' ),
+	];
 
-        wp_send_json_success(
-            [
-                'mode'  => $mode,
-                'label' => $labels[ $mode ] ?? $labels['sell'],
-                'class' => $mode,
-            ]
-        );
-    }
+	wp_send_json_success(
+		[
+			'mode'  => $mode,
+			'label' => $labels[ $mode ] ?? $labels['sell'],
+			'class' => $mode,
+		]
+	);
+}
+
 
     /**
      * Hide catalog products from shop-like queries.

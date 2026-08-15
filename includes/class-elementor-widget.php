@@ -90,9 +90,105 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 		$this->register_style_card_controls();
 		$this->register_style_title_controls();
 		$this->register_style_price_controls();
+		$this->register_style_enquiry_button_controls();
 
 		// Advanced Preset Styling
 		$this->register_preset_style_sections();
+	}
+
+	/**
+	 * STYLE: Enquiry Button
+	 * When a product is in catalog mode, the grid template outputs an enquiry link
+	 * using the `.modep-enquire-btn` class. This section mirrors the Catalog widget
+	 * so both widgets expose the same styling options.
+	 */
+	protected function register_style_enquiry_button_controls() : void {
+		$this->start_controls_section(
+			'section_style_enquiry_button',
+			[
+				'label' => __( 'Enquiry Button Style', 'modefilter-pro' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Typography::get_type(),
+			[ 'name' => 'enq_btn_typo', 'selector' => '{{WRAPPER}} .modep-enquire-btn' ]
+		);
+
+		$this->start_controls_tabs( 'tabs_enq_btn_style' );
+
+		$this->start_controls_tab( 'tab_enq_btn_normal', [ 'label' => __( 'Normal', 'modefilter-pro' ) ] );
+		$this->add_control(
+			'enq_btn_color',
+			[
+				'label'     => __( 'Text Color', 'modefilter-pro' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => [ '{{WRAPPER}} .modep-enquire-btn' => 'color: {{VALUE}} !important;' ],
+			]
+		);
+		$this->add_group_control(
+			Group_Control_Background::get_type(),
+			[
+				'name'     => 'enq_btn_bg',
+				'types'    => [ 'classic', 'gradient' ],
+				// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
+				'exclude'  => [ 'image' ], //Elementor UI, not WordPress DB
+				'selector' => '{{WRAPPER}} .modep-enquire-btn',
+			]
+		);
+		$this->end_controls_tab();
+
+		$this->start_controls_tab( 'tab_enq_btn_hover', [ 'label' => __( 'Hover', 'modefilter-pro' ) ] );
+		$this->add_control(
+			'enq_btn_color_hover',
+			[
+				'label'     => __( 'Text Color', 'modefilter-pro' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => [ '{{WRAPPER}} .modep-enquire-btn:hover' => 'color: {{VALUE}} !important;' ],
+			]
+		);
+		$this->add_group_control(
+			Group_Control_Background::get_type(),
+			[
+				'name'     => 'enq_btn_bg_hover',
+				'types'    => [ 'classic', 'gradient' ],
+				// phpcs:ignore WordPressVIPMinimum.Performance.WPQueryParams.PostNotIn_exclude
+				'exclude'  => [ 'image' ], //Elementor UI Setting, Not a WordPress DB Query
+				'selector' => '{{WRAPPER}} .modep-enquire-btn:hover',
+			]
+		);
+		$this->end_controls_tab();
+
+		$this->end_controls_tabs();
+
+		$this->add_responsive_control(
+			'enq_btn_padding',
+			[
+				'label'     => __( 'Padding', 'modefilter-pro' ),
+				'type'      => Controls_Manager::DIMENSIONS,
+				'separator' => 'before',
+				'selectors' => [
+					'{{WRAPPER}} .modep-enquire-btn' => 'padding: {{TOP}}{{UNIT}} {{RIGHT}}{{UNIT}} {{BOTTOM}}{{UNIT}} {{LEFT}}{{UNIT}} !important;',
+				],
+			]
+		);
+
+		$this->add_group_control(
+			Group_Control_Border::get_type(),
+			[ 'name' => 'enq_btn_border', 'selector' => '{{WRAPPER}} .modep-enquire-btn' ]
+		);
+
+		$this->add_control(
+			'enq_btn_radius',
+			[
+				'label'     => __( 'Border Radius', 'modefilter-pro' ),
+				'type'      => Controls_Manager::SLIDER,
+				'selectors' => [ '{{WRAPPER}} .modep-enquire-btn' => 'border-radius: {{SIZE}}{{UNIT}} !important;' ],
+			]
+		);
+
+		$this->end_controls_section();
 	}
 
 	/**
@@ -381,6 +477,36 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 			]
 		);
 
+		// NEW IN v1.0.7: Template Kit Selector
+		$this->add_control(
+			'modep_template_kit',
+			[
+				'label'       => __( '🎨 Template Kit (v1.0.7+)', 'modefilter-pro' ),
+				'type'        => Controls_Manager::SELECT,
+				'default'     => 'none',
+				'options'     => [
+					'none'       => __( '— Select a Template Kit —', 'modefilter-pro' ),
+					'classic'    => __( '✓ Classic Grid', 'modefilter-pro' ),
+					'minimal'    => __( '✓ Minimal (2-column)', 'modefilter-pro' ),
+					'masonry'    => __( '✓ Masonry', 'modefilter-pro' ),
+					'hierarchy'  => __( '✓ Hierarchy Browser', 'modefilter-pro' ),
+					'justified'  => __( '✓ Justified Gallery', 'modefilter-pro' ),
+					'catalog'    => __( '✓ Catalog Mode', 'modefilter-pro' ),
+				],
+				'description' => __( 'Applies a complete coordinated design: layout, product cards, filter presentation, colors, spacing, pagination, and loader. Choose the blank option for fully manual control.', 'modefilter-pro' ),
+			]
+		);
+
+		$this->add_control(
+			'kit_notice',
+			[
+				'type'            => Controls_Manager::RAW_HTML,
+				'raw'             => '<div style="padding: 12px; background: #f0f4ff; border-radius: 6px; color: #1d4ed8; font-size: 12px;"><strong>💡 Tip:</strong> After selecting a template, customize any setting below. Elementor updates in real-time.</div>',
+				'content_classes' => 'elementor-panel-heading-title',
+				'condition'       => [ 'modep_template_kit!' => 'none' ],
+			]
+		);
+
 		$this->add_control(
 			'filters_mode',
 			[
@@ -401,14 +527,73 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 				'type'        => Controls_Manager::SELECT2,
 				'multiple'    => true,
 				'label_block' => true,
-				'options'     => [
+				'options'     => array_merge( [
 					'categories' => __( 'Product Categories', 'modefilter-pro' ),
 					'tags'       => __( 'Product Tags', 'modefilter-pro' ),
 					'brands'     => __( 'Product Brands', 'modefilter-pro' ),
-					'price'      => __( 'Price Slider', 'modefilter-pro' ),
+					'price'      => __( 'Price Ranges', 'modefilter-pro' ),
 					'rating'     => __( 'Average Rating', 'modefilter-pro' ),
-				],
+				], class_exists( 'MODEP_Attributes' ) ? MODEP_Attributes::get_registered_attribute_taxonomies() : [] ),
 				'description' => __( 'In Manual mode, only selected filters appear. In Auto mode, these act as an override.', 'modefilter-pro' ),
+			]
+		);
+
+		$this->add_control(
+			'filter_style',
+			[
+				'label'   => __( 'Filter Style', 'modefilter-pro' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'global',
+				'options' => [
+					'global'       => __( 'Inherit Global Default', 'modefilter-pro' ),
+					'chips'        => __( 'Modern Chips', 'modefilter-pro' ),
+					'checkboxes'   => __( 'Checkboxes', 'modefilter-pro' ),
+					'radios'       => __( 'Radio Buttons', 'modefilter-pro' ),
+					'toggles'      => __( 'Toggle Switches', 'modefilter-pro' ),
+					'hierarchical' => __( 'Hierarchical Category Tree', 'modefilter-pro' ),
+				],
+				'description' => __( 'Choose how filter options are displayed to customers. Hierarchical requires parent/child categories to show tree structure.', 'modefilter-pro' ),
+			]
+		);
+
+		$this->add_control(
+			'category_hierarchy',
+			[
+				'label'   => __( 'Category Hierarchy', 'modefilter-pro' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'global',
+				'options' => [
+					'global' => __( 'Inherit Global Default', 'modefilter-pro' ),
+					'yes'    => __( 'Parent / Child Tree', 'modefilter-pro' ),
+					'no'     => __( 'Flat Category List', 'modefilter-pro' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'loader_style',
+			[
+				'label'   => __( 'AJAX Loader', 'modefilter-pro' ),
+				'type'    => Controls_Manager::SELECT,
+				'default' => 'global',
+				'options' => [
+					'global'   => __( 'Inherit Global Default', 'modefilter-pro' ),
+					'spinner'  => __( 'Spinning Loader', 'modefilter-pro' ),
+					'skeleton' => __( 'Product Skeletons', 'modefilter-pro' ),
+					'dots'     => __( 'Animated Dots', 'modefilter-pro' ),
+					'pulse'    => __( 'Pulsing Ring', 'modefilter-pro' ),
+					'custom'   => __( 'Custom Image / GIF / SVG', 'modefilter-pro' ),
+					'none'     => __( 'No Visual Loader', 'modefilter-pro' ),
+				],
+			]
+		);
+
+		$this->add_control(
+			'loader_image',
+			[
+				'label'     => __( 'Custom Loader Image', 'modefilter-pro' ),
+				'type'      => Controls_Manager::MEDIA,
+				'condition' => [ 'loader_style' => 'custom' ],
 			]
 		);
 
@@ -1201,8 +1386,8 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 				'range'      => [ 'px' => [ 'min' => 0, 'max' => 20 ] ],
 				'default'    => [ 'size' => 3 ],
 				'selectors'  => [
-					'{{WRAPPER}}.modep--preset-normal .modep-product-inner' => 'transition: transform 0.3s ease;',
-					'{{WRAPPER}}.modep--preset-normal .modep-product-inner:hover' => 'transform: translateY(-{{SIZE}}{{UNIT}});',
+					'{{WRAPPER}} .modep--preset-normal .modep-product-inner' => 'transition: transform 0.3s ease;',
+					'{{WRAPPER}} .modep--preset-normal .modep-product-inner:hover' => 'transform: translateY(-{{SIZE}}{{UNIT}});',
 				],
 			]
 		);
@@ -1225,7 +1410,7 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 				'label'     => __( 'Overlay Tint', 'modefilter-pro' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => 'rgba(0,0,0,0.7)',
-				'selectors' => [ '{{WRAPPER}}.modep--preset-overlay .modep-thumb-link:after' => 'background: {{VALUE}};' ],
+				'selectors' => [ '{{WRAPPER}} .modep--preset-overlay .modep-thumb-link:after' => 'background: {{VALUE}};' ],
 			]
 		);
 
@@ -1235,7 +1420,7 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 				'label'     => __( 'Overlay Text Color', 'modefilter-pro' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#ffffff',
-				'selectors' => [ '{{WRAPPER}}.modep--preset-overlay .modep-thumb-link:after' => 'color: {{VALUE}};' ],
+				'selectors' => [ '{{WRAPPER}} .modep--preset-overlay .modep-thumb-link:after' => 'color: {{VALUE}};' ],
 			]
 		);
 
@@ -1245,7 +1430,7 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 				'label'     => __( 'Overlay Rounded Corners', 'modefilter-pro' ),
 				'type'      => Controls_Manager::SLIDER,
 				'range'     => [ 'px' => [ 'min' => 0, 'max' => 40 ] ],
-				'selectors' => [ '{{WRAPPER}}.modep--preset-overlay .modep-thumb-link:after' => 'border-radius: {{SIZE}}{{UNIT}};' ],
+				'selectors' => [ '{{WRAPPER}} .modep--preset-overlay .modep-thumb-link:after' => 'border-radius: {{SIZE}}{{UNIT}};' ],
 			]
 		);
 
@@ -1267,7 +1452,7 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 				'label'     => __( 'Action Button BG', 'modefilter-pro' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#000000',
-				'selectors' => [ '{{WRAPPER}}.modep--preset-minimal .modep-add-to-cart .button' => 'background-color: {{VALUE}};' ],
+				'selectors' => [ '{{WRAPPER}} .modep--preset-minimal .modep-add-to-cart .button' => 'background-color: {{VALUE}};' ],
 			]
 		);
 
@@ -1277,7 +1462,7 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 				'label'     => __( 'Action Button Text', 'modefilter-pro' ),
 				'type'      => Controls_Manager::COLOR,
 				'default'   => '#ffffff',
-				'selectors' => [ '{{WRAPPER}}.modep--preset-minimal .modep-add-to-cart .button' => 'color: {{VALUE}};' ],
+				'selectors' => [ '{{WRAPPER}} .modep--preset-minimal .modep-add-to-cart .button' => 'color: {{VALUE}};' ],
 			]
 		);
 
@@ -1313,6 +1498,16 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 	protected function render() : void {
 		$s = $this->get_settings_for_display();
 
+		// Template Kits are complete coordinated designs. Resolve them on the
+		// server as well as in the editor so cached previews and frontend renders
+		// never depend on an editor-only JavaScript event.
+		$template_kit = class_exists( 'MODEP_Template_Kits' )
+			? MODEP_Template_Kits::sanitize_kit_id( (string) ( $s['modep_template_kit'] ?? 'none' ) )
+			: 'none';
+		if ( 'none' !== $template_kit ) {
+			$s = array_merge( $s, MODEP_Template_Kits::get_config( $template_kit ) );
+		}
+
 		// 1. Process Taxonomies (Inclusions)
 		$cat   = ! empty( $s['cat_in'] )   ? implode( ',', array_map( 'intval', (array) $s['cat_in'] ) )   : '';
 		$tag   = ! empty( $s['tag_in'] )   ? implode( ',', array_map( 'intval', (array) $s['tag_in'] ) )   : '';
@@ -1332,7 +1527,9 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 		// 4. Custom Card Layout String
 		// Format: part1|part2|!part3 (where ! denotes hidden)
 		$custom_layout = '';
-		if ( ( $s['preset'] ?? '' ) === 'custom' && ! empty( $s['custom_layout'] ) ) {
+		if ( is_string( $s['custom_layout'] ?? null ) ) {
+			$custom_layout = sanitize_text_field( $s['custom_layout'] );
+		} elseif ( ( $s['preset'] ?? '' ) === 'custom' && ! empty( $s['custom_layout'] ) ) {
 			$layout_parts = [];
 			foreach ( (array) $s['custom_layout'] as $row ) {
 				$part_key = sanitize_key( (string) ( $row['part'] ?? '' ) );
@@ -1346,6 +1543,7 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 
 		// 5. Build Shortcode Attributes
 		$attributes = [
+			'template_kit'      => $template_kit,
 			'columns'           => (int) ( $s['columns'] ?? 3 ),
 			'per_page'          => (int) ( $s['per_page'] ?? 9 ),
 			'sort'              => esc_attr( $s['sort'] ?? '' ),
@@ -1355,21 +1553,31 @@ class MODEP_Elementor_Widget extends \Elementor\Widget_Base {
 			'pagination'        => esc_attr( $s['pagination'] ?? 'load_more' ),
 			'load_more_text'    => esc_attr( $s['load_more_text'] ?? __( 'Load more', 'modefilter-pro' ) ),
 			'preset'            => esc_attr( $s['preset'] ?? 'normal' ),
-			'link_whole_card'   => ! empty( $s['link_whole_card'] ) ? 'yes' : 'no',
+			'link_whole_card'   => ( 'yes' === (string) ( $s['link_whole_card'] ?? 'no' ) ) ? 'yes' : 'no',
 			'custom_layout'     => esc_attr( $custom_layout ),
 			'filter_position'   => esc_attr( $s['filter_position'] ?? 'left' ),
+			'filter_style'      => esc_attr( $s['filter_style'] ?? 'global' ),
+			'category_hierarchy'=> esc_attr( $s['category_hierarchy'] ?? 'global' ),
 			'filters_mode'      => esc_attr( $s['filters_mode'] ?? 'manual' ),
 			'filters'           => $filters_csv,
 			'terms_limit'       => (int) ( $s['terms_limit'] ?? 12 ),
 			'terms_orderby'     => esc_attr( $s['terms_orderby'] ?? 'count' ),
 			'terms_order'       => esc_attr( $s['terms_order'] ?? 'DESC' ),
 			'terms_show_more'   => ! empty( $s['terms_show_more'] ) ? 'yes' : 'no',
+			'loader_style'      => esc_attr( $s['loader_style'] ?? 'global' ),
+			'loader_image'      => ! empty( $s['loader_image']['url'] ) ? esc_url( (string) $s['loader_image']['url'] ) : '',
+			'only_catalog'      => ( 'yes' === (string) ( $s['only_catalog'] ?? 'no' ) ) ? 'yes' : 'no',
+			'show_excerpt'      => ( 'no' === (string) ( $s['show_excerpt'] ?? 'yes' ) ) ? 'no' : 'yes',
+			'excerpt_length'    => (int) ( $s['excerpt_length'] ?? 20 ),
+			'catalog_button_text' => esc_attr( $s['catalog_button_text'] ?? __( 'Enquire Now', 'modefilter-pro' ) ),
 			'exclude_cat'       => $ex_cat,
 			'exclude_tag'       => $ex_tag,
 			'exclude_brand'     => $ex_brand,
 			'grid_layout'       => esc_attr( $s['grid_layout'] ?? 'grid' ),
-			'masonry_gap'       => isset( $s['masonry_gap']['size'] ) ? (int) $s['masonry_gap']['size'] : '',
-			'justified_height'  => (int) ( $s['justified_row_height'] ?? 250 ),
+			'masonry_gap'       => isset( $s['masonry_gap']['size'] )
+				? (int) $s['masonry_gap']['size']
+				: (int) ( $s['masonry_gap'] ?? 20 ),
+			'justified_row_height' => (int) ( $s['justified_row_height'] ?? 250 ),
 		];
 
 		// Flatten attributes for shortcode string

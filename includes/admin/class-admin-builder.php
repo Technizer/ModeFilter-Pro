@@ -15,6 +15,13 @@ final class MODEP_Admin_Builder {
      * Note: This page relies on admin-builder.js to handle the generation logic.
      */
     public static function render() : void {
+		$requested_kit = filter_input( INPUT_GET, 'kit', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
+		$selected_kit  = class_exists( 'MODEP_Template_Kits' )
+			? MODEP_Template_Kits::sanitize_kit_id( is_string( $requested_kit ) ? $requested_kit : 'classic' )
+			: 'none';
+		if ( 'none' === $selected_kit ) {
+			$selected_kit = 'classic';
+		}
 
         MODEP_Admin_UI::page_open(
             __( 'Shortcode Builder', 'modefilter-pro' ),
@@ -23,7 +30,13 @@ final class MODEP_Admin_Builder {
 
         MODEP_Admin_UI::tabs( 'builder' );
         ?>
-        <div class="modep-card modep-card-padded">
+		<div id="modep-shortcode-builder" class="modep-card modep-card-padded" data-selected-kit="<?php echo esc_attr( $selected_kit ); ?>">
+			<div class="modep-builder-kits">
+				<h2><?php esc_html_e( 'Start with a Template Kit', 'modefilter-pro' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Each kit applies a different layout engine, filter presentation, palette, card design, pagination style, and loader. You can continue adjusting the fields below before copying the shortcode.', 'modefilter-pro' ); ?></p>
+				<?php MODEP_Template_Kits::render_selector( $selected_kit ); ?>
+			</div>
+			<hr class="modep-separator" />
             <table class="form-table modep-form-table">
 
                 <tr>
@@ -86,6 +99,32 @@ final class MODEP_Admin_Builder {
                 </tr>
 
                 <tr>
+                    <th><label for="modep_sc_filter_style"><?php esc_html_e( 'Filter Style', 'modefilter-pro' ); ?></label></th>
+                    <td>
+                        <select id="modep_sc_filter_style" class="modep-select">
+                            <option value="global"><?php esc_html_e( 'Inherit Global Default', 'modefilter-pro' ); ?></option>
+                            <option value="chips"><?php esc_html_e( 'Modern Chips', 'modefilter-pro' ); ?></option>
+                            <option value="checkboxes"><?php esc_html_e( 'Checkboxes', 'modefilter-pro' ); ?></option>
+                            <option value="radios"><?php esc_html_e( 'Radio Buttons', 'modefilter-pro' ); ?></option>
+                            <option value="toggles"><?php esc_html_e( 'Toggle Switches', 'modefilter-pro' ); ?></option>
+                            <option value="hierarchical"><?php esc_html_e( 'Hierarchical Category Tree', 'modefilter-pro' ); ?></option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th><label for="modep_sc_category_hierarchy"><?php esc_html_e( 'Category Hierarchy', 'modefilter-pro' ); ?></label></th>
+                    <td>
+                        <select id="modep_sc_category_hierarchy" class="modep-select">
+                            <option value="global"><?php esc_html_e( 'Inherit Global Default', 'modefilter-pro' ); ?></option>
+                            <option value="yes"><?php esc_html_e( 'Show Parent / Child Tree', 'modefilter-pro' ); ?></option>
+                            <option value="no"><?php esc_html_e( 'Flat Category List', 'modefilter-pro' ); ?></option>
+                        </select>
+                        <p class="description"><?php esc_html_e( 'The Hierarchical style always enables the category tree.', 'modefilter-pro' ); ?></p>
+                    </td>
+                </tr>
+
+                <tr>
                     <th><label><?php esc_html_e( 'Enable Filters', 'modefilter-pro' ); ?></label></th>
                     <td class="modep-row modep-gap">
                         <select id="modep_sc_filters" class="modep-select" multiple size="5" style="min-width:260px;">
@@ -102,7 +141,25 @@ final class MODEP_Admin_Builder {
                             <option value="right"><?php esc_html_e( 'Position: Right', 'modefilter-pro' ); ?></option>
                         </select>
 
-                        <input type="hidden" id="modep_sc_ui" value="chips" />
+                    </td>
+                </tr>
+
+                <tr>
+                    <th><label for="modep_sc_loader_style"><?php esc_html_e( 'AJAX Loader', 'modefilter-pro' ); ?></label></th>
+                    <td>
+                        <select id="modep_sc_loader_style" class="modep-select">
+                            <option value="global"><?php esc_html_e( 'Inherit Global Default', 'modefilter-pro' ); ?></option>
+                            <option value="spinner"><?php esc_html_e( 'Spinning Loader', 'modefilter-pro' ); ?></option>
+                            <option value="skeleton"><?php esc_html_e( 'Product Skeletons', 'modefilter-pro' ); ?></option>
+                            <option value="dots"><?php esc_html_e( 'Animated Dots', 'modefilter-pro' ); ?></option>
+                            <option value="pulse"><?php esc_html_e( 'Pulsing Ring', 'modefilter-pro' ); ?></option>
+                            <option value="custom"><?php esc_html_e( 'Custom Image / GIF / SVG', 'modefilter-pro' ); ?></option>
+                            <option value="none"><?php esc_html_e( 'No Visual Loader', 'modefilter-pro' ); ?></option>
+                        </select>
+                        <input type="url" id="modep_sc_loader_image" value="" class="modep-input" placeholder="https://example.com/loader.gif" />
+                        <button type="button" class="button modep-loader-media-select" data-target="modep_sc_loader_image"><?php esc_html_e( 'Choose Media', 'modefilter-pro' ); ?></button>
+                        <button type="button" class="button-link-delete modep-loader-media-clear" data-target="modep_sc_loader_image"><?php esc_html_e( 'Clear', 'modefilter-pro' ); ?></button>
+                        <p class="description"><?php esc_html_e( 'The image URL is used only with the Custom loader.', 'modefilter-pro' ); ?></p>
                     </td>
                 </tr>
 

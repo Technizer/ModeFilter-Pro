@@ -1,7 +1,8 @@
 /* =========================================================
-   ModeFilter Pro — Modern UI (2025/26) — Pro (3 layouts only)
-   Layouts: grid, overlay, masonry
+   ModeFilter Pro — Modern UI (2025/26) — Pro
    UI: chips-only
+   Presets (skin): grid, overlay, masonry (visual)
+   Grid Layouts (engine): grid, masonry, justified
    ========================================================= */
 
 /* ---------------------------
@@ -32,6 +33,10 @@
 
     --modep-gap: 18px;
     --modep-gap-sm: 10px;
+
+    /* Layout vars (JS may set) */
+    --modep-masonry-gap: var(--modep-gap);
+    --modep-justified-row-height: 220px;
 
     color: var(--modep-text);
 }
@@ -70,6 +75,203 @@
     border-radius: var(--modep-radius);
     box-shadow: var(--modep-shadow-soft);
     padding: 14px;
+    position: relative;
+}
+
+/* Accessible skeleton loader used during the initial request and filtering. */
+.modep-loader[hidden] {
+    display: none !important;
+}
+
+.modep-loader--none { display: none !important; }
+
+.modep-loader {
+    padding: 8px 0 4px;
+}
+
+.modep-loader--spinner,
+.modep-loader--dots,
+.modep-loader--pulse,
+.modep-loader--custom {
+    position: absolute;
+    z-index: 8;
+    top: 72px;
+    left: 14px;
+    right: 14px;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--modep-radius);
+    background: var(--modep-surface);
+    box-shadow: 0 18px 48px rgba(15, 23, 42, .10);
+    backdrop-filter: blur(4px);
+}
+
+.modep-loader__spinner,
+.modep-loader__pulse {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+}
+
+.modep-loader__spinner {
+    border: 4px solid var(--modep-accent-soft);
+    border-top-color: var(--modep-accent);
+    animation: modep-spin .72s linear infinite;
+    box-shadow: 0 12px 32px rgba(47, 108, 255, .18);
+}
+
+.modep-loader__pulse {
+    border: 3px solid var(--modep-accent);
+    animation: modep-pulse 1s ease-out infinite;
+}
+
+.modep-loader__dots {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.modep-loader__dots i {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--modep-accent);
+    animation: modep-dot 1s ease-in-out infinite;
+}
+
+.modep-loader__dots i:nth-child(2) { animation-delay: .14s; }
+.modep-loader__dots i:nth-child(3) { animation-delay: .28s; }
+
+.modep-loader__image {
+    display: block;
+    width: auto;
+    max-width: min(160px, 60%);
+    max-height: 120px;
+    object-fit: contain;
+}
+
+@keyframes modep-spin { to { transform: rotate(360deg); } }
+@keyframes modep-pulse {
+    0% { transform: scale(.72); opacity: 1; box-shadow: 0 0 0 0 var(--modep-accent-soft); }
+    100% { transform: scale(1.16); opacity: 0; box-shadow: 0 0 0 22px transparent; }
+}
+@keyframes modep-dot {
+    0%, 80%, 100% { transform: translateY(0); opacity: .45; }
+    40% { transform: translateY(-9px); opacity: 1; }
+}
+
+.modep-loader__grid {
+    display: grid;
+    grid-template-columns: repeat(var(--modep-cols, 3), minmax(0, 1fr));
+    gap: var(--modep-gap);
+}
+
+.modep-skeleton-card {
+    display: block;
+    min-height: 290px;
+    padding: 12px;
+    overflow: hidden;
+    border: 1px solid var(--modep-border);
+    border-radius: var(--modep-radius);
+    background: var(--modep-surface);
+}
+
+.modep-skeleton-card span,
+.modep-skeleton-card i,
+.modep-skeleton-card b {
+    display: block;
+    position: relative;
+    overflow: hidden;
+    border-radius: 10px;
+    background: #edf0f5;
+}
+
+.modep-skeleton-card span {
+    height: 200px;
+    margin-bottom: 16px;
+}
+
+.modep-skeleton-card i {
+    width: 78%;
+    height: 16px;
+    margin-bottom: 12px;
+}
+
+.modep-skeleton-card b {
+    width: 42%;
+    height: 13px;
+}
+
+.modep-skeleton-card span::after,
+.modep-skeleton-card i::after,
+.modep-skeleton-card b::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .78), transparent);
+    animation: modep-shimmer 1.25s infinite;
+}
+
+@keyframes modep-shimmer {
+    100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .modep-skeleton-card span::after,
+    .modep-skeleton-card i::after,
+    .modep-skeleton-card b::after,
+    .modep-loader__spinner,
+    .modep-loader__pulse,
+    .modep-loader__dots i { animation: none; }
+}
+
+@media (max-width: 768px) {
+    .modep-loader__grid { grid-template-columns: 1fr; }
+    .modep-skeleton-card:nth-child(n+2) { display: none; }
+}
+
+.modep--preset-minimal .modep-product-inner {
+    box-shadow: none;
+    border-color: transparent;
+    background: transparent;
+}
+
+.modep-stock-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.modep-stock-form[hidden],
+.modep-stock-form .modep-hp { display: none !important; }
+
+.modep-stock-form input[type="email"] {
+    width: 100%;
+    min-height: 42px;
+    border: 1px solid var(--modep-border-2);
+    border-radius: 10px;
+    padding: 8px 10px;
+}
+
+.modep-stock-form button {
+    min-height: 42px;
+    border: 0;
+    border-radius: 10px;
+    padding: 8px 14px;
+    color: #fff;
+    background: var(--modep-accent);
+    cursor: pointer;
+}
+
+.modep-stock-form__status {
+    grid-column: 1 / -1;
+    margin: 0;
+    font-size: 13px;
+    color: var(--modep-muted);
 }
 
 /* Filter position classes (JS applies) */
@@ -148,6 +350,15 @@
     transition: transform .16s ease, box-shadow .16s ease, background .16s ease, border .16s ease;
 }
 
+/* Ensure term limiting always works, even if a theme overrides the [hidden] UA rule */
+.modep .modep-chip[hidden] {
+    display: none !important;
+}
+
+.modep .modep-chip.modep-chip--hidden {
+    display: none !important;
+}
+
 .modep .modep-chip:hover {
     transform: translateY(-1px);
     border-color: var(--modep-border-2);
@@ -163,6 +374,133 @@
 .modep .modep-chip:focus {
     outline: none;
     box-shadow: var(--modep-focus);
+}
+
+/* Checkbox, radio and hierarchical presentations share accessible buttons. */
+.modep--ui-checkboxes .modep-chips,
+.modep--ui-radios .modep-chips,
+.modep--ui-toggles .modep-chips,
+.modep--ui-hierarchical .modep-chips {
+    display: grid;
+    gap: 5px;
+}
+
+.modep--ui-checkboxes .modep-chip,
+.modep--ui-radios .modep-chip,
+.modep--ui-hierarchical .modep-chip {
+    position: relative;
+    width: 100%;
+    min-height: 38px;
+    padding: 9px 10px 9px calc(39px + var(--modep-indent, 0px));
+    border-color: transparent;
+    border-radius: 10px;
+    background: transparent;
+    text-align: left;
+    box-shadow: none;
+}
+
+.modep--ui-checkboxes .modep-chip::before,
+.modep--ui-radios .modep-chip::before,
+.modep--ui-hierarchical .modep-chip::before {
+    content: "";
+    position: absolute;
+    left: calc(10px + var(--modep-indent, 0px));
+    top: 50%;
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--modep-border-2);
+    border-radius: 5px;
+    background: var(--modep-surface);
+    transform: translateY(-50%);
+    box-sizing: border-box;
+}
+
+.modep--ui-radios .modep-chip::before { border-radius: 50%; }
+
+.modep--ui-checkboxes .modep-chip.is-selected::before,
+.modep--ui-hierarchical .modep-chip.is-selected::before {
+    content: "✓";
+    border-color: var(--modep-accent);
+    background: var(--modep-accent);
+    color: #fff;
+    font-size: 13px;
+    line-height: 14px;
+    text-align: center;
+}
+
+.modep--ui-radios .modep-chip.is-selected::before {
+    border: 5px solid var(--modep-accent);
+}
+
+.modep--ui-checkboxes .modep-chip.is-selected,
+.modep--ui-radios .modep-chip.is-selected,
+.modep--ui-hierarchical .modep-chip.is-selected {
+    background: var(--modep-accent-soft);
+    box-shadow: none;
+}
+
+.modep--ui-hierarchical .modep-option--child::after {
+    content: "";
+    position: absolute;
+    top: -6px;
+    bottom: 50%;
+    left: calc(18px + var(--modep-branch-indent, 0px));
+    width: 10px;
+    border-left: 1px solid var(--modep-border);
+    border-bottom: 1px solid var(--modep-border);
+    border-radius: 0 0 0 6px;
+}
+
+.modep--ui-toggles .modep-chip {
+    position: relative;
+    width: 100%;
+    min-height: 42px;
+    padding: 10px 54px 10px calc(12px + var(--modep-indent, 0px));
+    border-radius: 12px;
+    text-align: left;
+}
+
+.modep--ui-toggles .modep-chip::before,
+.modep--ui-toggles .modep-chip::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    transition: .18s ease;
+}
+
+.modep--ui-toggles .modep-chip::after {
+    right: 11px;
+    width: 34px;
+    height: 20px;
+    border-radius: 999px;
+    background: #d7dce6;
+    transform: translateY(-50%);
+}
+
+.modep--ui-toggles .modep-chip::before {
+    z-index: 1;
+    right: 28px;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #fff;
+    transform: translateY(-50%);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, .2);
+}
+
+.modep--ui-toggles .modep-chip.is-selected::after { background: var(--modep-accent); }
+.modep--ui-toggles .modep-chip.is-selected::before { right: 15px; }
+.modep .modep-chip:disabled { cursor: wait; opacity: .58; }
+
+.modep-filter-box--hierarchical .modep-options {
+    display: grid;
+    align-items: stretch;
+}
+
+.modep--ui-chips .modep-filter-box--hierarchical .modep-option {
+    width: calc(100% - var(--modep-indent, 0px));
+    margin-left: var(--modep-indent, 0px);
+    text-align: left;
 }
 
 /* Show more button */
@@ -208,11 +546,11 @@
 }
 
 /* ---------------------------
-   Product Grid
+   Product Grid (Default: CSS Grid)
 ---------------------------- */
 .modep-grid {
-    grid-template-columns: repeat(var(--modep-cols, 3), minmax(0, 1fr));
     display: grid;
+    grid-template-columns: repeat(var(--modep-cols, 3), minmax(0, 1fr));
     gap: var(--modep-gap);
     list-style: none;
     margin: 0;
@@ -248,7 +586,7 @@
 }
 
 /* Grid preset hover (default) */
-.modep--preset-grid .modep-product-inner:hover {
+.modep--preset-normal .modep-product-inner:hover {
     transform: translateY(-3px);
     box-shadow: var(--modep-shadow);
     border-color: var(--modep-border-2);
@@ -333,25 +671,30 @@
     transition: transform .18s ease, box-shadow .18s ease, filter .18s ease, background .18s ease;
 }
 
-/* Enquire/Notify */
+/* Enquire/Notify — 2026 clean default (solid, Elementor-friendly) */
 .modep-enquire-btn,
 .modep-notify-btn {
-    border: 1px solid transparent;
+    border: 1px solid rgba(47, 108, 255, 0.22);
     color: #fff;
-    background: linear-gradient(135deg, var(--modep-accent), #ff7a2f);
-    box-shadow: 0 16px 28px rgba(47, 108, 255, 0.18);
+
+    /* IMPORTANT: do NOT use `background:` shorthand here */
+    background-color: var(--modep-accent);
+    background-image: none;
+
+    box-shadow: 0 12px 22px rgba(47, 108, 255, 0.16);
 }
 
 .modep-enquire-btn:hover,
 .modep-notify-btn:hover {
     transform: translateY(-1px);
-    filter: brightness(1.02);
+    filter: brightness(0.98);
+    box-shadow: 0 16px 28px rgba(47, 108, 255, 0.20);
 }
 
 .modep-enquire-btn:focus,
 .modep-notify-btn:focus {
     outline: none;
-    box-shadow: var(--modep-focus), 0 16px 28px rgba(47, 108, 255, 0.18);
+    box-shadow: var(--modep-focus), 0 16px 28px rgba(47, 108, 255, 0.20);
 }
 
 /* Woo add-to-cart button */
@@ -408,7 +751,7 @@
 }
 
 /* ---------------------------
-   Preset: Overlay
+   Preset: Overlay (skin)
    - shows title on thumbnail overlay
    - hides normal title (clean)
 ---------------------------- */
@@ -433,20 +776,44 @@
 }
 
 /* ---------------------------
-   Preset: Masonry (CSS columns)
-   Note: uses the same card markup, but different grid layout.
+   Grid Layout: Masonry (engine) — CSS columns
 ---------------------------- */
 .modep-grid.modep-grid--masonry {
     display: block;
     column-count: var(--modep-cols, 3);
-    column-gap: var(--modep-gap);
+    column-gap: var(--modep-masonry-gap, var(--modep-gap));
 }
 
 .modep-grid.modep-grid--masonry>li {
     display: inline-block;
     width: 100%;
-    margin: 0 0 var(--modep-gap);
+    margin: 0 0 var(--modep-masonry-gap, var(--modep-gap));
     break-inside: avoid;
+}
+
+/* ---------------------------
+   Grid Layout: Justified (engine) — CSS-first “justified feel”
+   Note: true justified packing needs JS; this version keeps rows consistent.
+---------------------------- */
+.modep-grid.modep-grid--justified {
+    display: grid;
+    grid-template-columns: repeat(var(--modep-cols, 3), minmax(0, 1fr));
+    gap: var(--modep-gap);
+}
+
+/* Create a consistent media height, making the grid feel justified */
+.modep-grid.modep-grid--justified .modep-thumb-link,
+.modep-grid.modep-grid--justified .modep-thumb {
+    height: var(--modep-justified-row-height, 220px);
+    display: block;
+}
+
+.modep-grid.modep-grid--justified .modep-thumb-link img,
+.modep-grid.modep-grid--justified .modep-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 /* ---------------------------
@@ -486,8 +853,16 @@
 }
 
 /* ---------------------------
-   Mobile
+   Mobile / Responsive
 ---------------------------- */
+@media (max-width: 1024px) {
+
+    /* Masonry columns should reduce on tablets */
+    .modep-grid.modep-grid--masonry {
+        column-count: 2;
+    }
+}
+
 @media (max-width: 768px) {
     .modep {
         flex-direction: column;
@@ -518,14 +893,565 @@
         width: fit-content;
     }
 
+    /* Default grid on mobile */
     .modep-grid {
         grid-template-columns: 1fr;
         gap: 14px;
+    }
+
+    /* Force masonry to become single column on mobile */
+    .modep-grid.modep-grid--masonry {
+        column-count: 1;
+        column-gap: 0;
+    }
+
+    .modep-grid.modep-grid--masonry>li {
+        margin-bottom: 14px;
+    }
+
+    /* Justified: keep row height slightly smaller on mobile */
+    .modep-grid.modep-grid--justified {
+        grid-template-columns: 1fr;
+    }
+
+    .modep-grid.modep-grid--justified .modep-thumb-link,
+    .modep-grid.modep-grid--justified .modep-thumb {
+        height: 200px;
     }
 }
 
 @media (min-width: 769px) {
     .modep .modep-toggle-btn {
         display: none !important;
+    }
+}
+
+/* =========================================================
+   Template Kits (v1.0.7)
+   Each kit is a complete visual system, not a thumbnail alias.
+   ========================================================= */
+
+/* 1. Classic Grid — trustworthy blue retail system. */
+.modep--kit-classic {
+    --modep-surface: #ffffff;
+    --modep-surface-2: #f4f7ff;
+    --modep-border: #dce5f6;
+    --modep-border-2: #b9cae7;
+    --modep-text: #17233d;
+    --modep-muted: #64718a;
+    --modep-accent: #2563eb;
+    --modep-accent-soft: rgba(37, 99, 235, .11);
+    --modep-focus: 0 0 0 3px rgba(37, 99, 235, .22);
+    --modep-gap: 22px;
+}
+
+.modep--kit-classic .modep-sidebar {
+    border-top: 4px solid var(--modep-accent);
+}
+
+.modep--kit-classic .modep-main {
+    background: linear-gradient(180deg, #fff 0%, #f8faff 100%);
+}
+
+.modep--kit-classic .modep-product-inner {
+    border-radius: 16px;
+    box-shadow: 0 12px 30px rgba(33, 58, 108, .09);
+}
+
+.modep--kit-classic .modep-thumb-link,
+.modep--kit-classic .modep-thumb {
+    aspect-ratio: 1 / 1;
+}
+
+.modep--kit-classic .modep-thumb-link img,
+.modep--kit-classic .modep-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modep--kit-classic .modep-add-to-cart .button,
+.modep--kit-classic .modep-enquire-btn {
+    border-color: var(--modep-accent);
+    background-color: var(--modep-accent);
+    color: #fff;
+}
+
+/* 2. Minimal — monochrome editorial shop. */
+.modep--kit-minimal {
+    --modep-surface: #fff;
+    --modep-surface-2: #f7f6f2;
+    --modep-border: #e9e7e1;
+    --modep-border-2: #c8c4ba;
+    --modep-text: #171717;
+    --modep-muted: #73716b;
+    --modep-accent: #171717;
+    --modep-accent-soft: rgba(23, 23, 23, .07);
+    --modep-focus: 0 0 0 3px rgba(23, 23, 23, .16);
+    --modep-radius: 4px;
+    --modep-radius-sm: 3px;
+    --modep-shadow-soft: none;
+    --modep-shadow: none;
+    --modep-gap: 34px;
+}
+
+.modep--kit-minimal .modep-sidebar {
+    padding: 4px 28px 4px 0;
+    border: 0;
+    border-right: 1px solid var(--modep-border);
+    border-radius: 0;
+    background: transparent;
+}
+
+.modep--kit-minimal .modep-main {
+    padding: 0 0 0 12px;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.modep--kit-minimal .modep-filter-box {
+    padding: 0 0 22px;
+    border: 0;
+    border-bottom: 1px solid var(--modep-border);
+    border-radius: 0;
+    background: transparent;
+}
+
+.modep--kit-minimal .modep-filter-box h3 {
+    color: var(--modep-text);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+}
+
+.modep--kit-minimal .modep-product-inner {
+    padding: 0 0 22px;
+    border: 0;
+    border-bottom: 1px solid var(--modep-border);
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.modep--kit-minimal .modep-thumb-link,
+.modep--kit-minimal .modep-thumb {
+    aspect-ratio: 4 / 3;
+    border: 0;
+    border-radius: 2px;
+    background: var(--modep-surface-2);
+}
+
+.modep--kit-minimal .modep-thumb-link img,
+.modep--kit-minimal .modep-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modep--kit-minimal .modep-title {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 20px;
+    font-weight: 500;
+}
+
+.modep--kit-minimal .modep-add-to-cart .button,
+.modep--kit-minimal .modep-enquire-btn {
+    border-radius: 2px;
+    background: transparent;
+    color: var(--modep-text);
+    box-shadow: none;
+}
+
+/* 3. Masonry — expressive violet discovery wall. */
+.modep--kit-masonry {
+    --modep-surface: #ffffff;
+    --modep-surface-2: #f7f2ff;
+    --modep-border: rgba(91, 33, 182, .13);
+    --modep-border-2: rgba(91, 33, 182, .25);
+    --modep-text: #2b1748;
+    --modep-muted: #756486;
+    --modep-accent: #7c3aed;
+    --modep-accent-soft: rgba(124, 58, 237, .12);
+    --modep-focus: 0 0 0 3px rgba(124, 58, 237, .22);
+    --modep-gap: 28px;
+    padding: 22px;
+    border-radius: 28px;
+    background: linear-gradient(135deg, #f8f4ff 0%, #fff 52%, #fdf2f8 100%);
+}
+
+.modep--kit-masonry .modep-sidebar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid rgba(124, 58, 237, .13);
+    border-radius: 20px;
+    background: rgba(255, 255, 255, .82);
+    box-shadow: 0 18px 50px rgba(91, 33, 182, .09);
+}
+
+.modep--kit-masonry .modep-filter-box {
+    margin: 0;
+    border: 0;
+    background: #faf8ff;
+}
+
+.modep--kit-masonry .modep-main {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.modep--kit-masonry .modep-product-inner {
+    overflow: hidden;
+    padding: 12px;
+    border: 0;
+    border-radius: 22px;
+    box-shadow: 0 16px 38px rgba(55, 25, 90, .12);
+}
+
+.modep--kit-masonry .modep-grid--masonry > li:nth-child(4n+1) .modep-thumb-link,
+.modep--kit-masonry .modep-grid--masonry > li:nth-child(4n+1) .modep-thumb { aspect-ratio: 4 / 5; }
+.modep--kit-masonry .modep-grid--masonry > li:nth-child(4n+2) .modep-thumb-link,
+.modep--kit-masonry .modep-grid--masonry > li:nth-child(4n+2) .modep-thumb { aspect-ratio: 1 / 1; }
+.modep--kit-masonry .modep-grid--masonry > li:nth-child(4n+3) .modep-thumb-link,
+.modep--kit-masonry .modep-grid--masonry > li:nth-child(4n+3) .modep-thumb { aspect-ratio: 5 / 4; }
+.modep--kit-masonry .modep-grid--masonry > li:nth-child(4n) .modep-thumb-link,
+.modep--kit-masonry .modep-grid--masonry > li:nth-child(4n) .modep-thumb { aspect-ratio: 3 / 4; }
+
+.modep--kit-masonry .modep-thumb-link img,
+.modep--kit-masonry .modep-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modep--kit-masonry .modep-add-to-cart .button,
+.modep--kit-masonry .modep-enquire-btn {
+    border: 0;
+    background: linear-gradient(135deg, #7c3aed, #db2777);
+    color: #fff;
+}
+
+/* 4. Hierarchy Browser — dark evergreen navigator. */
+.modep--kit-hierarchy {
+    --modep-surface: #ffffff;
+    --modep-surface-2: #eefaf5;
+    --modep-border: #d1e9df;
+    --modep-border-2: #9fcfbd;
+    --modep-text: #103b32;
+    --modep-muted: #5d766f;
+    --modep-accent: #0f766e;
+    --modep-accent-soft: rgba(15, 118, 110, .12);
+    --modep-focus: 0 0 0 3px rgba(20, 184, 166, .22);
+    --modep-gap: 20px;
+}
+
+.modep--kit-hierarchy .modep-sidebar {
+    flex-basis: 300px;
+    padding: 18px;
+    border: 0;
+    background: linear-gradient(165deg, #073d35, #0c5449);
+    box-shadow: 0 20px 48px rgba(7, 61, 53, .2);
+}
+
+.modep--kit-hierarchy .modep-filter-box {
+    border-color: rgba(255, 255, 255, .1);
+    background: rgba(255, 255, 255, .06);
+}
+
+.modep--kit-hierarchy .modep-filter-box h3,
+.modep--kit-hierarchy .modep-chip {
+    color: #f2fffa;
+}
+
+.modep--kit-hierarchy.modep--ui-hierarchical .modep-chip::before {
+    border-color: rgba(255, 255, 255, .45);
+    background: rgba(255, 255, 255, .08);
+}
+
+.modep--kit-hierarchy.modep--ui-hierarchical .modep-chip.is-selected {
+    background: rgba(45, 212, 191, .17);
+}
+
+.modep--kit-hierarchy.modep--ui-hierarchical .modep-chip.is-selected::before {
+    border-color: #2dd4bf;
+    background: #2dd4bf;
+    color: #073d35;
+}
+
+.modep--kit-hierarchy .modep-option--child::after {
+    border-color: rgba(255, 255, 255, .28);
+}
+
+.modep--kit-hierarchy .modep-terms-more {
+    border-color: rgba(255, 255, 255, .18);
+    background: rgba(255, 255, 255, .08);
+    color: #fff;
+}
+
+.modep--kit-hierarchy .modep-main {
+    border: 0;
+    background: #f5fbf8;
+    box-shadow: none;
+}
+
+.modep--kit-hierarchy .modep-product-inner {
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(16, 59, 50, .08);
+}
+
+.modep--kit-hierarchy .modep-add-to-cart .button,
+.modep--kit-hierarchy .modep-enquire-btn {
+    border-color: var(--modep-accent);
+    background: var(--modep-accent);
+    color: #fff;
+}
+
+/* 5. Justified Gallery — image-first dark magenta exhibition. */
+.modep--kit-justified {
+    --modep-surface: #211126;
+    --modep-surface-2: #2d1734;
+    --modep-border: rgba(255, 255, 255, .11);
+    --modep-border-2: rgba(255, 255, 255, .22);
+    --modep-text: #fff7ff;
+    --modep-muted: #d3bfd8;
+    --modep-accent: #ec4899;
+    --modep-accent-soft: rgba(236, 72, 153, .18);
+    --modep-focus: 0 0 0 3px rgba(244, 114, 182, .28);
+    --modep-gap: 10px;
+    padding: 20px;
+    border-radius: 24px;
+    background: linear-gradient(145deg, #150a19, #29132e);
+}
+
+.modep--kit-justified .modep-sidebar {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 12px;
+    border-color: rgba(255, 255, 255, .09);
+    background: rgba(255, 255, 255, .045);
+    box-shadow: none;
+}
+
+.modep--kit-justified .modep-filter-box {
+    flex: 0 0 auto;
+    min-width: 190px;
+    margin: 0;
+    border-color: rgba(255, 255, 255, .1);
+    background: rgba(255, 255, 255, .04);
+}
+
+.modep--kit-justified .modep-filter-box h3,
+.modep--kit-justified .modep-chip,
+.modep--kit-justified .modep-sort-label { color: var(--modep-text); }
+
+.modep--kit-justified.modep--ui-radios .modep-chip::before {
+    border-color: rgba(255, 255, 255, .38);
+    background: transparent;
+}
+
+.modep--kit-justified .modep-main {
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.modep--kit-justified select.modep-sort {
+    border-color: rgba(255, 255, 255, .14);
+    background: #2d1734;
+    color: #fff;
+}
+
+.modep--kit-justified .modep-product-inner {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    padding: 0;
+    border: 0;
+    border-radius: 10px;
+    background: #160a19;
+    box-shadow: none;
+}
+
+.modep--kit-justified .modep-thumb-link,
+.modep--kit-justified .modep-thumb {
+    border: 0;
+    border-radius: 0;
+}
+
+.modep--kit-justified .modep--preset-overlay .modep-title,
+.modep--kit-justified .modep-title { display: none; }
+
+.modep--kit-justified .modep-thumb-link::after {
+    left: 12px;
+    right: auto;
+    bottom: 12px;
+    max-width: calc(100% - 24px);
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: rgba(20, 7, 23, .76);
+}
+
+.modep--kit-justified .modep-price {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+    padding: 6px 9px;
+    border-radius: 999px;
+    background: rgba(236, 72, 153, .9);
+    color: #fff;
+    font-size: 12px;
+}
+
+.modep--kit-justified .modep-stock-badge {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 3;
+    border-color: rgba(255, 255, 255, .2);
+    background: rgba(20, 7, 23, .74);
+    color: #fff;
+}
+
+.modep--kit-justified .modep-pagination button {
+    border-color: rgba(255, 255, 255, .14);
+    background: #2d1734;
+    color: #fff;
+    box-shadow: none;
+}
+
+/* 6. Catalog Mode — warm quotation-first horizontal cards. */
+.modep--kit-catalog {
+    --modep-surface: #fffdfa;
+    --modep-surface-2: #fff4e8;
+    --modep-border: #f1d9bf;
+    --modep-border-2: #dcba94;
+    --modep-text: #3c2516;
+    --modep-muted: #80644f;
+    --modep-accent: #c2410c;
+    --modep-accent-soft: rgba(194, 65, 12, .11);
+    --modep-focus: 0 0 0 3px rgba(234, 88, 12, .22);
+    --modep-gap: 20px;
+}
+
+.modep--kit-catalog .modep-sidebar {
+    flex-basis: 280px;
+    border: 0;
+    background: linear-gradient(180deg, #fff8ef, #ffedd9);
+    box-shadow: none;
+}
+
+.modep--kit-catalog .modep-filter-box {
+    border-color: rgba(194, 65, 12, .12);
+    background: rgba(255, 255, 255, .72);
+}
+
+.modep--kit-catalog .modep-main {
+    border-color: #f3e2cf;
+    background: #fffdfa;
+    box-shadow: 0 16px 42px rgba(95, 55, 25, .08);
+}
+
+.modep--kit-catalog .modep-product-inner {
+    display: grid;
+    grid-template-columns: minmax(120px, 42%) minmax(0, 1fr);
+    grid-auto-rows: min-content;
+    column-gap: 16px;
+    align-content: start;
+    padding: 12px;
+    border-radius: 14px;
+    box-shadow: none;
+}
+
+.modep--kit-catalog .modep-thumb-link,
+.modep--kit-catalog .modep-thumb {
+    grid-column: 1;
+    grid-row: 1 / span 8;
+    height: 100%;
+    min-height: 190px;
+    border: 0;
+    border-radius: 10px;
+}
+
+.modep--kit-catalog .modep-thumb-link img,
+.modep--kit-catalog .modep-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.modep--kit-catalog .modep-stock-badge,
+.modep--kit-catalog .modep-title,
+.modep--kit-catalog .modep-price,
+.modep--kit-catalog .modep-excerpt,
+.modep--kit-catalog .modep-add-to-cart,
+.modep--kit-catalog .modep-catalog-message {
+    grid-column: 2;
+}
+
+.modep--kit-catalog .modep-title {
+    margin-top: 3px;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 18px;
+}
+
+.modep--kit-catalog .modep-enquire-btn {
+    border-color: var(--modep-accent);
+    border-radius: 8px;
+    background: var(--modep-accent);
+    color: #fff;
+    box-shadow: 0 10px 22px rgba(194, 65, 12, .16);
+}
+
+.modep--kit-catalog .modep-pagination .modep-page-btn.is-active {
+    background: var(--modep-accent);
+    color: #fff;
+}
+
+@media (max-width: 1024px) {
+    .modep--kit-classic .modep-grid,
+    .modep--kit-hierarchy .modep-grid,
+    .modep--kit-justified .modep-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .modep--kit-catalog .modep-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .modep--kit-minimal .modep-sidebar {
+        padding: 14px;
+        border: 1px solid var(--modep-border);
+    }
+
+    .modep--kit-minimal .modep-main { padding: 0; }
+
+    .modep--kit-masonry,
+    .modep--kit-justified { padding: 14px; border-radius: 18px; }
+
+    .modep--kit-masonry .modep-sidebar,
+    .modep--kit-justified .modep-sidebar { display: none; }
+
+    .modep--kit-masonry .modep-sidebar.open,
+    .modep--kit-justified .modep-sidebar.open { display: grid; }
+
+    .modep--kit-hierarchy .modep-sidebar.open { display: block; }
+
+    .modep--kit-catalog .modep-product-inner {
+        display: flex;
+    }
+
+    .modep--kit-catalog .modep-thumb-link,
+    .modep--kit-catalog .modep-thumb {
+        width: 100%;
+        min-height: 230px;
     }
 }

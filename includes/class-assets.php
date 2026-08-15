@@ -15,7 +15,7 @@ final class MODEP_Assets {
 
 	public static function init() : void {
 		// Standard Frontend
-		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'register_and_enqueue' ], 10 );
+		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'register' ], 10 );
 
 		// Elementor Editor Specific
 		add_action( 'elementor/frontend/after_register_scripts', [ __CLASS__, 'register' ], 10 );
@@ -91,6 +91,13 @@ final class MODEP_Assets {
 		self::register();
 		wp_enqueue_style( 'modep-style' );
 		wp_enqueue_script( 'modep-js' );
+	}
+
+	/**
+	 * Enqueue the public assets only when a shortcode or widget is rendered.
+	 */
+	public static function enqueue() : void {
+		self::register_and_enqueue();
 	}
 
 	/**

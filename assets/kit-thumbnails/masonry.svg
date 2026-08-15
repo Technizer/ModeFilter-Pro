@@ -1,0 +1,8 @@
+<svg viewBox="0 0 180 140" xmlns="http://www.w3.org/2000/svg">
+  <defs><linearGradient id="m" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#6d28d9"/><stop offset="1" stop-color="#db2777"/></linearGradient></defs>
+  <rect width="180" height="140" rx="8" fill="#f5efff"/>
+  <rect x="8" y="8" width="164" height="19" rx="9.5" fill="#fff" stroke="#dcc7fb"/>
+  <g fill="#ede2ff"><rect x="14" y="13" width="30" height="9" rx="4.5"/><rect x="49" y="13" width="28" height="9" rx="4.5"/><rect x="82" y="13" width="31" height="9" rx="4.5"/></g><rect x="14" y="13" width="30" height="9" rx="4.5" fill="url(#m)"/>
+  <g fill="#fff" stroke="#e1d4f4"><rect x="8" y="35" width="36" height="73" rx="6"/><rect x="50" y="35" width="36" height="52" rx="6"/><rect x="92" y="35" width="36" height="91" rx="6"/><rect x="134" y="35" width="38" height="64" rx="6"/><rect x="8" y="114" width="36" height="18" rx="6"/><rect x="50" y="93" width="36" height="39" rx="6"/><rect x="134" y="105" width="38" height="27" rx="6"/></g>
+  <g fill="url(#m)" opacity=".72"><rect x="12" y="39" width="28" height="46" rx="4"/><rect x="54" y="39" width="28" height="26" rx="4"/><rect x="96" y="39" width="28" height="63" rx="4"/><rect x="138" y="39" width="30" height="38" rx="4"/></g>
+</svg>

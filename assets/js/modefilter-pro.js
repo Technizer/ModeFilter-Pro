@@ -1,8 +1,9 @@
 /*!
- * ModeFilter Pro — Chips-only runtime (Pro) — 3 layouts only
- * Layouts: grid, overlay, masonry
+ * ModeFilter Pro — multi-style filter runtime
+ * Grid Layouts: grid, masonry, justified (via attrs.grid_layout)
+ * Presets (skins): grid, overlay, masonry (kept for backward compatibility only)
  * - Loads products via AJAX
- * - Chips-only filters (no checkbox/radio/toggle styles in Pro)
+ * - Chips, checkboxes, radios, toggles, and hierarchical categories
  * - Supports: categories/tags/brands + price chips + rating chips
  * - Supports: terms "Show more/less" toggle
  * - Elementor re-render safe + multi-instance safe (NO global selectors)
@@ -11,7 +12,14 @@
   "use strict";
 
   const INIT_FLAG = "modepInitDone";
-  const PRESETS = ["grid", "overlay", "masonry"];
+
+  // Presets are purely visual skins. Keep old list for back-compat.
+  const PRESETS = ["normal", "overlay", "minimal", "custom"];
+
+  // Grid layout modes are functional layout engines.
+  const GRID_LAYOUTS = ["grid", "masonry", "justified"];
+  const FILTER_STYLES = ["chips", "checkboxes", "radios", "toggles", "hierarchical"];
+  const TEMPLATE_KITS = ["classic", "minimal", "masonry", "hierarchy", "justified", "catalog"];
 
   function getAjaxUrl() {
     return (
@@ -62,6 +70,66 @@
     };
   }
 
+  function normalizePreset(raw) {
+    let p = String(raw || "normal").toLowerCase();
+
+    // Back-compat mapping (old presets)
+    // Backward compatibility with the original runtime-only names.
+    if (p === "grid") p = "normal";
+    if (p === "masonry") p = "minimal";
+    if (!PRESETS.includes(p)) p = "normal";
+
+    return p;
+  }
+
+  function normalizeGridLayout(raw) {
+    const g = String(raw || "grid").toLowerCase();
+    return GRID_LAYOUTS.includes(g) ? g : "grid";
+  }
+
+  function normalizeFilterPos(raw) {
+    const p = String(raw || "left").toLowerCase();
+    return ["left", "right", "top"].includes(p) ? p : "left";
+  }
+
+  function normalizeFilterStyle(raw) {
+    const style = String(raw || "chips").toLowerCase();
+    return FILTER_STYLES.includes(style) ? style : "chips";
+  }
+
+  function normalizeTemplateKit(raw) {
+    const kit = String(raw || "none").toLowerCase();
+    return TEMPLATE_KITS.includes(kit) ? kit : "none";
+  }
+
+  function setSelected($items, selected) {
+    $items.toggleClass("is-selected", !!selected);
+    $items.each(function () {
+      const $item = $(this);
+      if ($item.is("[role='checkbox'],[role='radio']")) {
+        $item.attr("aria-checked", selected ? "true" : "false");
+      } else {
+        $item.attr("aria-pressed", selected ? "true" : "false");
+      }
+    });
+  }
+
+  function syncControlSemantics($wrap, style) {
+    const radio = style === "radios";
+    const checked = radio || ["checkboxes", "toggles", "hierarchical"].includes(style);
+    $wrap.find(".modep-options").attr("role", radio ? "radiogroup" : "group");
+    $wrap.find(".modep-option").each(function () {
+      const $item = $(this);
+      const selected = $item.hasClass("is-selected");
+      $item.removeAttr("role aria-checked aria-pressed");
+      if (checked) {
+        $item.attr("role", radio ? "radio" : "checkbox").attr("aria-checked", selected ? "true" : "false");
+      } else {
+        $item.attr("aria-pressed", selected ? "true" : "false");
+      }
+    });
+  }
+
   function getSelectedTerms($group) {
     if (!$group || !$group.length) return [];
     return $group
@@ -81,26 +149,9 @@
       .find(".modep-chip.is-selected")
       .not(".modep-chip--all").length;
     if (!hasSpecific) {
-      $group.find(".modep-chip").removeClass("is-selected");
-      $group.find(".modep-chip--all").addClass("is-selected");
+      setSelected($group.find(".modep-chip"), false);
+      setSelected($group.find(".modep-chip--all"), true);
     }
-  }
-
-  function normalizePreset(raw) {
-    let p = String(raw || "grid").toLowerCase();
-
-    // Back-compat mapping (old presets)
-    // - normal => grid
-    // - minimal/creative/asym/bento/etc => grid
-    if (p === "normal") p = "grid";
-    if (!PRESETS.includes(p)) p = "grid";
-
-    return p;
-  }
-
-  function normalizeFilterPos(raw) {
-    const p = String(raw || "left").toLowerCase();
-    return ["left", "right", "top"].includes(p) ? p : "left";
   }
 
   function initMODEP($wrap) {
@@ -113,6 +164,7 @@
     const $grid = $wrap.find(".modep-grid").first();
     const $nav = $wrap.find(".modep-pagination").first();
     const $sort = $wrap.find(".modep-sort").first();
+    const $loader = $wrap.find(".modep-loader").first();
 
     if (!$grid.length) return;
 
@@ -126,10 +178,17 @@
       pagination: "load_more",
       columns: 3,
       perPage: 9,
-      preset: "grid",
+      preset: "normal", // purely skin
+      gridLayout: "grid", // real layout engine
       filterPos: "left",
+      filterStyle: "chips",
+      templateKit: "none",
       loadMoreText: "Load more",
       isLoading: false,
+
+      // Justified parameters (if you implement in CSS/JS later)
+      justifiedRowHeight: 220,
+      masonryGap: 20,
     };
 
     function getAttrs() {
@@ -139,7 +198,10 @@
     }
 
     function applyWrapperClasses() {
-      // preset classes
+      TEMPLATE_KITS.forEach((kit) => $wrap.removeClass("modep--kit-" + kit));
+      $wrap.removeClass("modep--kit-none");
+
+      // preset classes (skin)
       PRESETS.forEach((p) => $wrap.removeClass("modep--preset-" + p));
       $wrap.addClass("modep--preset-" + state.preset);
 
@@ -149,8 +211,29 @@
       );
       $wrap.addClass("modep--filters-" + state.filterPos);
 
-      // Pro explicit UI (chips)
-      $wrap.addClass("modep--ui-chips");
+      FILTER_STYLES.forEach((style) => $wrap.removeClass("modep--ui-" + style));
+      $wrap.addClass("modep--ui-" + state.filterStyle);
+      $wrap.attr("data-modep-filter-style", state.filterStyle);
+      $wrap.addClass("modep--kit-" + state.templateKit);
+      $wrap.attr("data-template-kit", state.templateKit);
+      syncControlSemantics($wrap, state.filterStyle);
+    }
+
+    function applyGridLayoutClasses() {
+      // Reset
+      $grid.removeClass("modep-grid--masonry modep-grid--justified");
+
+      // Base CSS vars
+      $grid.css("--modep-cols", state.columns);
+      $grid.css("--modep-masonry-gap", state.masonryGap);
+      $grid.css("--modep-justified-row-height", state.justifiedRowHeight);
+
+      // Apply layout engine classes
+      if (state.gridLayout === "masonry") {
+        $grid.addClass("modep-grid--masonry");
+      } else if (state.gridLayout === "justified") {
+        $grid.addClass("modep-grid--justified");
+      }
     }
 
     function parseAttrs() {
@@ -159,17 +242,23 @@
       state.pagination = String(attrs.pagination || "load_more").toLowerCase();
       state.columns = toInt(attrs.columns || 3, 3);
       state.perPage = toInt(attrs.per_page || 9, 9);
+
+      // preset is still used as skin
       state.preset = normalizePreset(attrs.preset);
+
+      // ✅ NEW: functional layout engine
+      state.gridLayout = normalizeGridLayout(attrs.grid_layout);
+
       state.filterPos = normalizeFilterPos(attrs.filter_position);
+      state.filterStyle = normalizeFilterStyle(attrs.filter_style || attrs.filter_ui);
+      state.templateKit = normalizeTemplateKit(attrs.template_kit);
       state.loadMoreText = String(attrs.load_more_text || "Load more");
 
-      // Grid base
-      $grid.css("--modep-cols", state.columns);
-
-      // Masonry grid mode (CSS columns)
-      $grid.toggleClass("modep-grid--masonry", state.preset === "masonry");
+      state.masonryGap = toInt(attrs.masonry_gap || 20, 20);
+      state.justifiedRowHeight = toInt(attrs.justified_row_height || 220, 220);
 
       applyWrapperClasses();
+      applyGridLayoutClasses();
     }
 
     function hasSidebarFilters() {
@@ -205,8 +294,14 @@
         .toggleClass("loading", state.isLoading)
         .attr("aria-busy", state.isLoading ? "true" : "false");
 
+      if ($loader && $loader.length) {
+        $loader.prop("hidden", !state.isLoading);
+      }
+
       if ($sort && $sort.length) $sort.prop("disabled", state.isLoading);
 
+      // In some installs chips are <button>, sometimes <a>/<span>.
+      // prop("disabled") is safe for <button>, harmless otherwise.
       $wrap.find(".modep-chip").prop("disabled", state.isLoading);
       $wrap
         .find(".modep-load-more, .modep-page-btn")
@@ -215,9 +310,9 @@
 
     function renderError(msg, append) {
       const safe = msg && typeof msg === "string" ? msg : "No products found.";
-      const html = `<div class="modep-no-products">${safe}</div>`;
-      if (append) $grid.append(html);
-      else $grid.html(html);
+      const $message = $("<div>", { class: "modep-no-products" }).text(safe);
+      if (append) $grid.append($message);
+      else $grid.empty().append($message);
     }
 
     function buildPagination() {
@@ -337,12 +432,23 @@
       const cat_ids = readIf(wantCats, $cats)
         .map((v) => toInt(v, 0))
         .filter(Boolean);
+
       const tag_ids = readIf(wantTags, $tags)
         .map((v) => toInt(v, 0))
         .filter(Boolean);
+
       const brand_ids = readIf(wantBrands, $brands)
         .map((v) => toInt(v, 0))
         .filter(Boolean);
+
+		const attribute_ids = {};
+		enabled
+			.filter((id) => id.indexOf("pa_") === 0)
+			.forEach((taxonomy) => {
+				const $group = $wrap.find(`.modep-chips[data-filter="${taxonomy}"]`).first();
+				const values = getSelectedTerms($group).map((v) => toInt(v, 0)).filter(Boolean);
+				if (values.length) attribute_ids[taxonomy] = values;
+			});
 
       let price_min = attrs.price_min !== undefined ? attrs.price_min : "";
       let price_max = attrs.price_max !== undefined ? attrs.price_max : "";
@@ -368,7 +474,7 @@
         }
       }
 
-      return { cat_ids, tag_ids, brand_ids, price_min, price_max, rating_min };
+      return { cat_ids, tag_ids, brand_ids, attribute_ids, price_min, price_max, rating_min };
     }
 
     function abortXHR() {
@@ -397,6 +503,9 @@
         (attrs.sort !== undefined ? attrs.sort : "") ||
         "";
 
+      // ✅ IMPORTANT:
+      // We DO NOT mutate attrs.only_catalog / attrs.context here.
+      // Those are decided server-side & provided in data-shortcode-attrs.
       const payload = {
         action: "modep_get_products",
         _nonce: getNonce(),
@@ -408,6 +517,7 @@
         cat_ids: filters.cat_ids,
         tag_ids: filters.tag_ids,
         brand_ids: filters.brand_ids,
+        attribute_ids: filters.attribute_ids,
         price_min: filters.price_min,
         price_max: filters.price_max,
         rating_min: filters.rating_min,
@@ -451,10 +561,18 @@
           state.maxPages = toInt(data.max_pages || 1, 1);
           state.total = toInt(data.total || 0, 0);
 
-          if (data.columns) {
-            state.columns = toInt(data.columns, state.columns);
-            $grid.css("--modep-cols", state.columns);
+          // Optional if server ever returns these
+          if (data.justified_row_height) {
+            state.justifiedRowHeight = toInt(
+              data.justified_row_height,
+              state.justifiedRowHeight
+            );
           }
+          if (data.masonry_gap) {
+            state.masonryGap = toInt(data.masonry_gap, state.masonryGap);
+          }
+
+          applyGridLayoutClasses();
 
           const html = (data.html || "").toString();
           if (!html.trim()) {
@@ -497,7 +615,7 @@
     }
 
     /* -----------------------------
-       UI Wiring (Chips-only)
+       UI Wiring
     ------------------------------ */
 
     $wrap.on("click", ".modep-chips .modep-chip", function () {
@@ -509,23 +627,24 @@
 
       const filter = String($group.data("filter") || "");
       const isAll = $chip.hasClass("modep-chip--all");
-      const isSingleSelect = filter === "price" || filter === "rating";
+      const activeStyle = normalizeFilterStyle($wrap.attr("data-modep-filter-style") || state.filterStyle);
+      const isSingleSelect = activeStyle === "radios" || filter === "price" || filter === "rating";
 
       if (isAll) {
-        $group.find(".modep-chip").removeClass("is-selected");
-        $chip.addClass("is-selected");
+        setSelected($group.find(".modep-chip"), false);
+        setSelected($chip, true);
       } else if (isSingleSelect) {
-        $group.find(".modep-chip").removeClass("is-selected");
-        $chip.addClass("is-selected");
-        $group.find(".modep-chip--all").removeClass("is-selected");
+        setSelected($group.find(".modep-chip"), false);
+        setSelected($chip, true);
+        setSelected($group.find(".modep-chip--all"), false);
       } else {
-        $chip.toggleClass("is-selected");
-        $group.find(".modep-chip--all").removeClass("is-selected");
+        setSelected($chip, !$chip.hasClass("is-selected"));
+        setSelected($group.find(".modep-chip--all"), false);
 
         if (
           !$group.find(".modep-chip.is-selected").not(".modep-chip--all").length
         ) {
-          $group.find(".modep-chip--all").addClass("is-selected");
+          setSelected($group.find(".modep-chip--all"), true);
         }
       }
 
@@ -562,6 +681,12 @@
       if (state.isLoading) return;
       state.page = 1;
       loadProducts({ page: 1 });
+    });
+
+    $wrap.on("modep:presentation:changed", function (event, presentation) {
+      const next = safeObj(presentation);
+      state.filterStyle = normalizeFilterStyle(next.filterStyle || next.filter_style || state.filterStyle);
+      applyWrapperClasses();
     });
 
     $wrap.on("click", ".modep-toggle-btn", function () {
@@ -655,5 +780,42 @@
     $(".modep").each(function () {
       initMODEP($(this));
     });
+  });
+
+  $(document).on("click", ".modep-notify-btn", function () {
+    const $form = $(this).next(".modep-stock-form");
+    if (!$form.length) return;
+    $form.prop("hidden", !$form.prop("hidden"));
+    if (!$form.prop("hidden")) $form.find('input[type="email"]').trigger("focus");
+  });
+
+  $(document).on("submit", ".modep-stock-form", function (event) {
+    event.preventDefault();
+    const $form = $(this);
+    const $status = $form.find(".modep-stock-form__status");
+    const $button = $form.find('button[type="submit"]');
+    $button.prop("disabled", true);
+    $status.text((window.MODEP_VARS && MODEP_VARS.i18n.loading) || "Submitting…");
+
+    $.post(getAjaxUrl(), {
+      action: "modep_subscribe_stock",
+      _nonce: getNonce(),
+      product_id: $form.data("product-id"),
+      email: $form.find('[name="email"]').val(),
+      website: $form.find('[name="website"]').val(),
+    })
+      .done(function (response) {
+        const message = response && response.data && response.data.message
+          ? response.data.message
+          : ((window.MODEP_VARS && MODEP_VARS.i18n.error) || "Please try again.");
+        $status.text(message);
+        if (response && response.success) $form.find("input").prop("disabled", true);
+      })
+      .fail(function () {
+        $status.text((window.MODEP_VARS && MODEP_VARS.i18n.error) || "Please try again.");
+      })
+      .always(function () {
+        $button.prop("disabled", false);
+      });
   });
 })(jQuery);

@@ -32,11 +32,16 @@ final class MODEP_Shortcode {
 	 */
 	public static function render_catalog( $atts ) : string {
 		$atts = is_array( $atts ) ? $atts : [];
+
+		// Force catalog mode no matter what.
 		$atts['only_catalog'] = 'yes';
+		$atts['context']      = 'catalog';
+
 		// Sensible default button label for catalog mode (can be overridden).
 		if ( empty( $atts['catalog_button_text'] ) ) {
 			$atts['catalog_button_text'] = __( 'Enquire now', 'modefilter-pro' );
 		}
+
 		return self::render( $atts );
 	}
 
@@ -51,9 +56,19 @@ final class MODEP_Shortcode {
 			return '<div class="modep-error">' . esc_html__( 'WooCommerce is not active.', 'modefilter-pro' ) . '</div>';
 		}
 
+		MODEP_Assets::enqueue();
+		if ( class_exists( 'MODEP_Review' ) ) {
+			MODEP_Review::mark_used();
+		}
+
 		// ------------------------------
 		// 1) Parse shortcode attributes (legacy + new architecture)
 		// ------------------------------
+		$raw_atts = is_array( $atts ) ? $atts : [];
+		if ( class_exists( 'MODEP_Template_Kits' ) ) {
+			$raw_atts = MODEP_Template_Kits::apply_to_atts( $raw_atts );
+		}
+
 		$atts = shortcode_atts(
 			[
 				// Query / scope.
@@ -70,8 +85,10 @@ final class MODEP_Shortcode {
 				'price_min'         => '',
 				'price_max'         => '',
 				'only_catalog'      => '',
+				'context'           => '',
 
 				// UI / layout.
+				'template_kit'      => 'none',
 				'preset'            => 'normal',
 				'pagination'        => 'load_more',
 				'load_more_text'    => __( 'Load more', 'modefilter-pro' ),
@@ -98,9 +115,13 @@ final class MODEP_Shortcode {
 				'terms_order'       => 'DESC',   // DESC|ASC
 				'terms_show_more'   => 'yes',    // yes|no
 
-				// Pro locked.
-				'filter_ui'         => 'chips',
+				// Presentation. filter_ui remains as a backwards-compatible alias.
+				'filter_style'      => 'global',
+				'filter_ui'         => '',
+				'category_hierarchy'=> 'global',
 				'filter_position'   => 'left',
+				'loader_style'      => 'global',
+				'loader_image'      => '',
 
 				// UI exclusions (taxonomy terms).
 				'exclude_cat'       => '',
@@ -116,7 +137,7 @@ final class MODEP_Shortcode {
 				'catalog_message'        => '',
 				'inquire_action'         => 'popup',
 			],
-			$atts,
+			$raw_atts,
 			'modep_filters'
 		);
 
@@ -129,10 +150,43 @@ final class MODEP_Shortcode {
 		// ------------------------------
 		// 2) Normalize + sanitize architecture attrs
 		// ------------------------------
-		$filters_mode = in_array( (string) $atts['filters_mode'], [ 'manual', 'auto' ], true ) ? (string) $atts['filters_mode'] : 'manual';
+		$filters_mode = in_array( (string) $atts['filters_mode'], [ 'manual', 'auto' ], true )
+			? (string) $atts['filters_mode']
+			: 'manual';
 
-		// Force Pro to chips-only, regardless of passed value.
-		$filter_ui = 'chips';
+		$template_kit = class_exists( 'MODEP_Template_Kits' )
+			? MODEP_Template_Kits::sanitize_kit_id( (string) $atts['template_kit'] )
+			: 'none';
+
+		$presentation   = self::get_global_presentation();
+		$requested_style = sanitize_key( (string) $atts['filter_style'] );
+		if ( ( '' === $requested_style || 'global' === $requested_style ) && '' !== (string) $atts['filter_ui'] ) {
+			$requested_style = sanitize_key( (string) $atts['filter_ui'] );
+		}
+		$filter_style = self::normalize_choice(
+			$requested_style,
+			[ 'chips', 'checkboxes', 'radios', 'toggles', 'hierarchical' ],
+			(string) $presentation['filter_style']
+		);
+		$category_hierarchy = self::normalize_yes_no_global(
+			(string) $atts['category_hierarchy'],
+			(string) $presentation['category_hierarchy']
+		);
+		if ( 'hierarchical' === $filter_style ) {
+			$category_hierarchy = 'yes';
+		}
+		$loader_style = self::normalize_choice(
+			sanitize_key( (string) $atts['loader_style'] ),
+			[ 'spinner', 'skeleton', 'dots', 'pulse', 'custom', 'none' ],
+			(string) $presentation['loader_style']
+		);
+		$loader_image = esc_url_raw( (string) $atts['loader_image'] );
+		if ( '' === $loader_image ) {
+			$loader_image = esc_url_raw( (string) $presentation['loader_image'] );
+		}
+		if ( 'custom' === $loader_style && '' === $loader_image ) {
+			$loader_style = 'spinner';
+		}
 
 		$filter_position = sanitize_key( (string) $atts['filter_position'] );
 		if ( ! in_array( $filter_position, [ 'left', 'right', 'top' ], true ) ) {
@@ -146,24 +200,43 @@ final class MODEP_Shortcode {
 			$terms_limit = 200;
 		}
 
-		$terms_orderby = in_array( (string) $atts['terms_orderby'], [ 'count', 'name' ], true ) ? (string) $atts['terms_orderby'] : 'count';
-		$terms_order   = in_array( strtoupper( (string) $atts['terms_order'] ), [ 'ASC', 'DESC' ], true ) ? strtoupper( (string) $atts['terms_order'] ) : 'DESC';
-		$show_more     = ( (string) $atts['terms_show_more'] === 'yes' ) ? 'yes' : 'no';
+		$terms_orderby = in_array( (string) $atts['terms_orderby'], [ 'count', 'name' ], true )
+			? (string) $atts['terms_orderby']
+			: 'count';
+
+		$terms_order = in_array( strtoupper( (string) $atts['terms_order'] ), [ 'ASC', 'DESC' ], true )
+			? strtoupper( (string) $atts['terms_order'] )
+			: 'DESC';
+
+		$show_more = ( (string) $atts['terms_show_more'] === 'yes' ) ? 'yes' : 'no';
 
 		// Enabled filters list (opt-in).
 		$enabled_filters = self::parse_filters_csv( (string) $atts['filters'] );
 
-		$only_catalog = ( isset( $atts['only_catalog'] ) && 'yes' === (string) $atts['only_catalog'] );
+		// ✅ Robust only_catalog normalization (yes/1/true/on)
+		$only_catalog = false;
+		if ( isset( $atts['only_catalog'] ) ) {
+			$v = strtolower( trim( (string) $atts['only_catalog'] ) );
+			$only_catalog = in_array( $v, [ 'yes', '1', 'true', 'on' ], true );
+		}
+
+		// Keep consistent downstream.
+		$atts['only_catalog'] = $only_catalog ? 'yes' : 'no';
+		if ( $only_catalog ) {
+			$atts['context'] = 'catalog';
+		}
 
 		// NEW: sanitize grid layout args
 		$grid_layout = sanitize_key( (string) $atts['grid_layout'] );
 		if ( ! in_array( $grid_layout, [ 'grid', 'masonry', 'justified' ], true ) ) {
 			$grid_layout = 'grid';
 		}
+
 		$masonry_gap = absint( (string) $atts['masonry_gap'] );
 		if ( $masonry_gap > 200 ) {
 			$masonry_gap = 200;
 		}
+
 		$justified_row_height = absint( (string) $atts['justified_row_height'] );
 		if ( $justified_row_height < 50 ) {
 			$justified_row_height = 50;
@@ -189,8 +262,11 @@ final class MODEP_Shortcode {
 		// 3) Catalog display attrs (pass-through)
 		// ------------------------------
 		$show_excerpt        = ( (string) $atts['show_excerpt'] === 'yes' ) ? 'yes' : 'no';
-		$excerpt_length_type = in_array( (string) $atts['excerpt_length_type'], [ 'words', 'chars' ], true ) ? (string) $atts['excerpt_length_type'] : 'words';
-		$excerpt_length      = (int) $atts['excerpt_length'];
+		$excerpt_length_type = in_array( (string) $atts['excerpt_length_type'], [ 'words', 'chars' ], true )
+			? (string) $atts['excerpt_length_type']
+			: 'words';
+
+		$excerpt_length = (int) $atts['excerpt_length'];
 		if ( $excerpt_length < 1 ) {
 			$excerpt_length = 1;
 		} elseif ( $excerpt_length > 500 ) {
@@ -200,15 +276,18 @@ final class MODEP_Shortcode {
 		$catalog_button_text    = sanitize_text_field( (string) $atts['catalog_button_text'] );
 		$catalog_message_enable = ( (string) $atts['catalog_message_enable'] === 'yes' ) ? 'yes' : 'no';
 		$catalog_message        = sanitize_textarea_field( (string) $atts['catalog_message'] );
-		$inquire_action         = in_array( (string) $atts['inquire_action'], [ 'popup', 'single' ], true ) ? (string) $atts['inquire_action'] : 'popup';
+		$inquire_action         = in_array( (string) $atts['inquire_action'], [ 'popup', 'single' ], true )
+			? (string) $atts['inquire_action']
+			: 'popup';
 
 		// ------------------------------
-		// 4) Determine "filter source pool" (shared with grid rules)
+		// 4) Determine "filter source pool"
 		// ------------------------------
 		$source_ids = self::get_source_product_ids(
 			$only_catalog,
 			(string) $atts['sellable_cat_slug']
 		);
+		$source_ids = self::apply_include_scopes( $source_ids, $resolved_includes );
 
 		// ------------------------------
 		// 5) Auto-detect available filters (when filters_mode=auto)
@@ -218,17 +297,15 @@ final class MODEP_Shortcode {
 		// Final list of filters to render.
 		$filters_to_render = $enabled_filters;
 		if ( 'auto' === $filters_mode ) {
-			// If user selected none, render what exists.
 			if ( empty( $filters_to_render ) ) {
 				$filters_to_render = $available_filters;
 			} else {
-				// If user selected some, only keep those that exist (suppression).
 				$filters_to_render = array_values( array_intersect( $filters_to_render, $available_filters ) );
 			}
 		}
 
 		// ------------------------------
-		// 6) Build UI data for enabled/available filters (taxonomy term maps + price/rating chips)
+		// 6) Build UI data for enabled/available filters
 		// ------------------------------
 		$ui_blocks = self::build_filters_ui_blocks(
 			$filters_to_render,
@@ -237,11 +314,12 @@ final class MODEP_Shortcode {
 			$terms_orderby,
 			$terms_order,
 			$show_more,
+			'yes' === $category_hierarchy,
 			$ex
 		);
 
 		// ------------------------------
-		// 7) JS payload (critical: attrs must survive shortcode → ajax → template)
+		// 7) JS payload (critical)
 		// ------------------------------
 		$for_js = [
 			'columns'         => max( 1, absint( (string) $atts['columns'] ) ),
@@ -250,49 +328,47 @@ final class MODEP_Shortcode {
 			'price_min'       => $atts['price_min'] !== '' ? (float) $atts['price_min'] : '',
 			'price_max'       => $atts['price_max'] !== '' ? (float) $atts['price_max'] : '',
 
-			// Optional “include” restrictions (only applied if user sets them)
 			'includes'        => $resolved_includes,
 
-			// Sellable set compatibility.
 			'sellable_set'    => [
 				'cat_slug' => sanitize_text_field( (string) $atts['sellable_cat_slug'] ),
 			],
 
 			'only_catalog'    => $only_catalog ? 'yes' : 'no',
+			'context'         => $only_catalog ? 'catalog' : sanitize_key( (string) ( $atts['context'] ?? '' ) ),
 
 			'pagination'      => sanitize_text_field( (string) $atts['pagination'] ),
 			'load_more_text'  => sanitize_text_field( (string) $atts['load_more_text'] ),
 
+			'template_kit'    => $template_kit,
 			'preset'          => sanitize_text_field( (string) $atts['preset'] ),
 			'link_whole_card' => ( (string) $atts['link_whole_card'] === 'yes' ),
 			'custom_layout'   => sanitize_text_field( (string) $atts['custom_layout'] ),
 
-			// NEW: Grid layout
 			'grid_layout'          => $grid_layout,
 			'masonry_gap'          => $masonry_gap,
 			'justified_row_height' => $justified_row_height,
 
-			// Link/meta pass-through.
 			'meta_fields'          => sanitize_text_field( (string) $atts['meta_fields'] ),
 			'link_mode'            => sanitize_key( (string) $atts['link_mode'] ),
 			'custom_link_url'      => esc_url_raw( (string) $atts['custom_link_url'] ),
 			'custom_link_external' => ( (string) $atts['custom_link_external'] === '1' ) ? '1' : '0',
 			'custom_link_nofollow' => ( (string) $atts['custom_link_nofollow'] === '1' ) ? '1' : '0',
 
-			// Filters (new architecture)
 			'filters_mode'    => $filters_mode,
-			'filters'         => $filters_to_render, // array, not csv
+			'filters'         => $filters_to_render,
 			'terms_limit'     => $terms_limit,
 			'terms_orderby'   => $terms_orderby,
 			'terms_order'     => $terms_order,
 			'terms_show_more' => $show_more,
 			'excludes'        => $ex,
 
-			// Pro locked UI type.
-			'filter_ui'       => $filter_ui,
+			'filter_style'    => $filter_style,
+			'filter_ui'       => $filter_style,
+			'category_hierarchy' => $category_hierarchy,
 			'filter_position' => $filter_position,
+			'loader_style'    => $loader_style,
 
-			// Catalog display pass-through.
 			'show_excerpt'           => $show_excerpt,
 			'excerpt_length'         => $excerpt_length,
 			'excerpt_length_type'    => $excerpt_length_type,
@@ -304,21 +380,21 @@ final class MODEP_Shortcode {
 
 		// Wrapper classes.
 		$preset_class = 'modep--preset-' . preg_replace( '/[^a-z0-9\-]/', '', strtolower( (string) $atts['preset'] ) );
+		$kit_class    = 'none' !== $template_kit ? 'modep--kit-' . $template_kit : 'modep--kit-none';
 		$pos_class    = 'modep--filters-' . preg_replace( '/[^a-z0-9\-]/', '', strtolower( $filter_position ) );
-		$ui_class     = 'modep--ui-chips';
+		$ui_class     = 'modep--ui-' . $filter_style;
 		$link_flag    = $for_js['link_whole_card'] ? '1' : '0';
 
-		// Render filters (chips-only).
-		$filters_html = self::render_filters_ui_chips( $ui_blocks );
+		$filters_html = self::render_filters_ui( $ui_blocks, $filter_style, 'yes' === $category_hierarchy );
 
-		// Toggle button: only useful for left/right layouts and only if we have any filters.
 		$has_any_filters = ! empty( $ui_blocks );
 		$show_toggle_btn = $has_any_filters && in_array( strtolower( $filter_position ), [ 'left', 'right' ], true );
 
 		ob_start();
 		?>
-		<div class="modep <?php echo esc_attr( "{$preset_class} {$pos_class} {$ui_class}" ); ?>"
+		<div class="modep <?php echo esc_attr( "{$kit_class} {$preset_class} {$pos_class} {$ui_class}" ); ?>"
 			data-shortcode-attrs="<?php echo esc_attr( wp_json_encode( $for_js ) ); ?>"
+			data-template-kit="<?php echo esc_attr( $template_kit ); ?>"
 			data-link-whole-card="<?php echo esc_attr( $link_flag ); ?>">
 
 			<?php if ( $show_toggle_btn ) : ?>
@@ -347,8 +423,65 @@ final class MODEP_Shortcode {
 					aria-live="polite"
 					aria-busy="false"></ul>
 
+				<?php echo wp_kses_post( self::render_loader( $loader_style, $loader_image, (int) $for_js['columns'] ) ); ?>
+
 				<nav class="modep-pagination" aria-label="<?php esc_attr_e( 'Products pagination', 'modefilter-pro' ); ?>"></nav>
 			</main>
+		</div>
+		<?php
+		return (string) ob_get_clean();
+	}
+
+	private static function get_global_presentation() : array {
+		$ui           = (array) get_option( 'modep_ui', [] );
+		$presentation = isset( $ui['presentation'] ) && is_array( $ui['presentation'] ) ? $ui['presentation'] : [];
+		return [
+			'filter_style'       => self::normalize_choice( sanitize_key( (string) ( $presentation['filter_style'] ?? 'chips' ) ), [ 'chips', 'checkboxes', 'radios', 'toggles', 'hierarchical' ], 'chips' ),
+			'category_hierarchy' => 'yes' === (string) ( $presentation['category_hierarchy'] ?? 'no' ) ? 'yes' : 'no',
+			'loader_style'       => self::normalize_choice( sanitize_key( (string) ( $presentation['loader_style'] ?? 'spinner' ) ), [ 'spinner', 'skeleton', 'dots', 'pulse', 'custom', 'none' ], 'spinner' ),
+			'loader_image'       => esc_url_raw( (string) ( $presentation['loader_image'] ?? '' ) ),
+		];
+	}
+
+	private static function normalize_choice( string $value, array $allowed, string $fallback ) : string {
+		if ( '' === $value || 'global' === $value ) {
+			$value = $fallback;
+		}
+		return in_array( $value, $allowed, true ) ? $value : $fallback;
+	}
+
+	private static function normalize_yes_no_global( string $value, string $fallback ) : string {
+		$value = strtolower( trim( $value ) );
+		if ( '' === $value || 'global' === $value ) {
+			$value = $fallback;
+		}
+		return in_array( $value, [ 'yes', '1', 'true', 'on' ], true ) ? 'yes' : 'no';
+	}
+
+	private static function render_loader( string $style, string $image, int $columns ) : string {
+		if ( 'none' === $style ) {
+			return '<div class="modep-loader modep-loader--none" hidden aria-hidden="true"></div>';
+		}
+
+		ob_start();
+		?>
+		<div class="modep-loader modep-loader--<?php echo esc_attr( $style ); ?>" style="--modep-cols: <?php echo esc_attr( (string) max( 1, $columns ) ); ?>;" role="status" aria-live="polite">
+			<span class="screen-reader-text"><?php esc_html_e( 'Loading products…', 'modefilter-pro' ); ?></span>
+			<?php if ( 'skeleton' === $style ) : ?>
+				<div class="modep-loader__grid" aria-hidden="true">
+					<?php for ( $modep_skeleton = 0; $modep_skeleton < 3; $modep_skeleton++ ) : ?>
+						<span class="modep-skeleton-card"><span></span><i></i><b></b></span>
+					<?php endfor; ?>
+				</div>
+			<?php elseif ( 'dots' === $style ) : ?>
+				<span class="modep-loader__dots" aria-hidden="true"><i></i><i></i><i></i></span>
+			<?php elseif ( 'pulse' === $style ) : ?>
+				<span class="modep-loader__pulse" aria-hidden="true"></span>
+			<?php elseif ( 'custom' === $style && '' !== $image ) : ?>
+				<img class="modep-loader__image" src="<?php echo esc_url( $image ); ?>" alt="" aria-hidden="true" />
+			<?php else : ?>
+				<span class="modep-loader__spinner" aria-hidden="true"></span>
+			<?php endif; ?>
 		</div>
 		<?php
 		return (string) ob_get_clean();
@@ -392,10 +525,47 @@ final class MODEP_Shortcode {
 				case 'rating':
 					$out[] = 'rating';
 					break;
+				default:
+					if ( 0 === strpos( $item, 'pa_' ) && taxonomy_exists( $item ) ) {
+						$out[] = $item;
+					}
+					break;
 			}
 		}
 
 		return array_values( array_unique( $out ) );
+	}
+
+	/**
+	 * Restrict filter choices to the same category/tag/brand scope as results.
+	 * Terms inside one taxonomy are ORed; different taxonomies are ANDed.
+	 *
+	 * @param int[] $source_ids Product pool.
+	 * @param array $includes   Resolved include term IDs.
+	 * @return int[]
+	 */
+	private static function apply_include_scopes( array $source_ids, array $includes ) : array {
+		$source_ids = array_values( array_unique( array_filter( array_map( 'absint', $source_ids ) ) ) );
+		$map = [
+			'cat_in'   => 'product_cat',
+			'tag_in'   => 'product_tag',
+			'brand_in' => 'product_brand',
+		];
+		foreach ( $map as $key => $taxonomy ) {
+			$term_ids = array_values( array_filter( array_map( 'absint', (array) ( $includes[ $key ] ?? [] ) ) ) );
+			if ( empty( $term_ids ) || ! taxonomy_exists( $taxonomy ) ) {
+				continue;
+			}
+			$objects = get_objects_in_term( $term_ids, $taxonomy );
+			if ( is_wp_error( $objects ) ) {
+				return [];
+			}
+			$source_ids = array_values( array_intersect( $source_ids, array_map( 'absint', $objects ) ) );
+			if ( empty( $source_ids ) ) {
+				break;
+			}
+		}
+		return $source_ids;
 	}
 
 	/**
@@ -462,11 +632,24 @@ final class MODEP_Shortcode {
 			$available[] = 'rating';
 		}
 
+		$ui_settings = get_option( 'modep_ui', [] );
+		$enabled_attributes = isset( $ui_settings['attrs'] ) && is_array( $ui_settings['attrs'] ) ? $ui_settings['attrs'] : [];
+		foreach ( $enabled_attributes as $taxonomy => $enabled ) {
+			$taxonomy = sanitize_key( (string) $taxonomy );
+			if ( ! $enabled || 0 !== strpos( $taxonomy, 'pa_' ) || ! taxonomy_exists( $taxonomy ) ) {
+				continue;
+			}
+			$terms = wp_get_object_terms( $source_ids, $taxonomy, [ 'hide_empty' => true, 'fields' => 'ids' ] );
+			if ( ! is_wp_error( $terms ) && ! empty( $terms ) ) {
+				$available[] = $taxonomy;
+			}
+		}
+
 		return array_values( array_unique( $available ) );
 	}
 
 	/**
-	 * Build UI blocks for filters to render (chips-only).
+	 * Build UI blocks for filters to render.
 	 *
 	 * Returns an array of blocks in the form:
 	 * [
@@ -489,6 +672,7 @@ final class MODEP_Shortcode {
 	 * @param string   $terms_orderby count|name
 	 * @param string   $terms_order ASC|DESC
 	 * @param string   $show_more yes|no
+	 * @param bool     $category_hierarchy Preserve product-category ancestry.
 	 * @param array    $ex Excludes: cat/tag/brand arrays
 	 * @return array
 	 */
@@ -499,6 +683,7 @@ final class MODEP_Shortcode {
 		string $terms_orderby,
 		string $terms_order,
 		string $show_more,
+		bool $category_hierarchy,
 		array $ex
 	) : array {
 		$blocks    = [];
@@ -519,7 +704,8 @@ final class MODEP_Shortcode {
 						$terms_order,
 						$show_more,
 						$ex['cat'] ?? [],
-						true // include counts
+						true, // include counts
+						$category_hierarchy
 					);
 					if ( ! empty( $chips_data['chips'] ) ) {
 						$blocks[] = [
@@ -604,6 +790,30 @@ final class MODEP_Shortcode {
 						];
 					}
 					break;
+
+				default:
+					if ( 0 === strpos( $fid, 'pa_' ) && taxonomy_exists( $fid ) ) {
+						$chips_data = self::get_taxonomy_chips(
+							$source_ids,
+							$fid,
+							$terms_limit,
+							'name',
+							'ASC',
+							$show_more,
+							[],
+							true
+						);
+						if ( ! empty( $chips_data['chips'] ) ) {
+							$blocks[] = [
+								'id'         => $fid,
+								'label'      => wc_attribute_label( $fid ),
+								'filter_key' => $fid,
+								'chips'      => $chips_data['chips'],
+								'has_more'   => $chips_data['has_more'],
+							];
+						}
+					}
+					break;
 			}
 		}
 
@@ -621,6 +831,7 @@ final class MODEP_Shortcode {
 	 * @param string $show_more yes|no
 	 * @param int[]  $exclude_ids Excluded term IDs.
 	 * @param bool   $with_counts Whether to append (count).
+	 * @param bool   $hierarchical Whether to preserve taxonomy ancestry.
 	 * @return array{chips: array, has_more: bool}
 	 */
 	private static function get_taxonomy_chips(
@@ -631,7 +842,8 @@ final class MODEP_Shortcode {
 		string $order,
 		string $show_more,
 		array $exclude_ids,
-		bool $with_counts
+		bool $with_counts,
+		bool $hierarchical = false
 	) : array {
 		$product_ids = array_values( array_filter( array_map( 'absint', $product_ids ) ) );
 		$exclude_ids = array_values( array_filter( array_map( 'absint', $exclude_ids ) ) );
@@ -654,11 +866,19 @@ final class MODEP_Shortcode {
 			return [ 'chips' => [], 'has_more' => false ];
 		}
 
+		if ( $hierarchical && is_taxonomy_hierarchical( $taxonomy ) ) {
+			$ancestor_ids = [];
+			foreach ( $term_ids as $term_id ) {
+				$ancestor_ids = array_merge( $ancestor_ids, get_ancestors( $term_id, $taxonomy, 'taxonomy' ) );
+			}
+			$term_ids = array_values( array_unique( array_diff( array_merge( $term_ids, array_map( 'absint', $ancestor_ids ) ), $exclude_ids ) ) );
+		}
+
 		// Fetch terms with ordering.
 		$args = [
 			'taxonomy'   => $taxonomy,
 			'include'    => $term_ids,
-			'hide_empty' => true,
+			'hide_empty' => ! $hierarchical,
 			'orderby'    => ( 'count' === $orderby ) ? 'count' : 'name',
 			'order'      => $order,
 		];
@@ -668,13 +888,17 @@ final class MODEP_Shortcode {
 			return [ 'chips' => [], 'has_more' => false ];
 		}
 
-		$total_terms = count( $terms );
+		$term_rows = $hierarchical && is_taxonomy_hierarchical( $taxonomy )
+			? self::flatten_terms_hierarchy( $terms, $orderby, $order )
+			: array_map( static function ( $term ) { return [ 'term' => $term, 'depth' => 0 ]; }, $terms );
+
+		$total_terms = count( $term_rows );
 		$has_more    = ( 'yes' === $show_more && $total_terms > $terms_limit );
 
 		// If show_more is disabled, slice hard (performance win).
 		$terms_to_render = ( 'yes' === $show_more )
-			? $terms
-			: array_slice( $terms, 0, $terms_limit );
+			? $term_rows
+			: array_slice( $term_rows, 0, $terms_limit );
 
 		$chips = [];
 		// All chip (default active state handled by JS; we keep markup consistent).
@@ -685,7 +909,9 @@ final class MODEP_Shortcode {
 			'hidden' => false,
 		];
 
-		foreach ( $terms_to_render as $idx => $t ) {
+		foreach ( $terms_to_render as $idx => $row ) {
+			$t     = $row['term'] ?? null;
+			$depth = absint( $row['depth'] ?? 0 );
 			if ( ! ( $t instanceof WP_Term ) ) {
 				continue;
 			}
@@ -700,6 +926,8 @@ final class MODEP_Shortcode {
 				'label'  => $label,
 				'active' => false,
 				'hidden' => $is_hidden,
+				'parent' => (string) (int) $t->parent,
+				'depth'  => $depth,
 			];
 		}
 
@@ -707,6 +935,56 @@ final class MODEP_Shortcode {
 			'chips'    => $chips,
 			'has_more' => $has_more,
 		];
+	}
+
+	private static function flatten_terms_hierarchy( array $terms, string $orderby, string $order ) : array {
+		$by_id    = [];
+		$children = [];
+		foreach ( $terms as $term ) {
+			if ( $term instanceof WP_Term ) {
+				$by_id[ (int) $term->term_id ] = $term;
+			}
+		}
+		foreach ( $by_id as $id => $term ) {
+			$parent = isset( $by_id[ (int) $term->parent ] ) ? (int) $term->parent : 0;
+			$children[ $parent ][] = $id;
+		}
+
+		$direction = 'DESC' === strtoupper( $order ) ? -1 : 1;
+		$sort_ids  = static function ( array &$ids ) use ( $by_id, $orderby, $direction ) : void {
+			usort( $ids, static function ( int $left, int $right ) use ( $by_id, $orderby, $direction ) : int {
+				$a = $by_id[ $left ];
+				$b = $by_id[ $right ];
+				$result = 'count' === $orderby
+					? ( (int) $a->count <=> (int) $b->count )
+					: strcasecmp( (string) $a->name, (string) $b->name );
+				return $direction * $result;
+			} );
+		};
+		foreach ( $children as &$ids ) {
+			$sort_ids( $ids );
+		}
+		unset( $ids );
+
+		$rows    = [];
+		$visited = [];
+		$walk    = static function ( int $parent, int $depth ) use ( &$walk, &$rows, &$visited, $children, $by_id ) : void {
+			foreach ( $children[ $parent ] ?? [] as $id ) {
+				if ( isset( $visited[ $id ] ) ) {
+					continue;
+				}
+				$visited[ $id ] = true;
+				$rows[] = [ 'term' => $by_id[ $id ], 'depth' => $depth ];
+				$walk( $id, $depth + 1 );
+			}
+		};
+		$walk( 0, 0 );
+		foreach ( array_keys( $by_id ) as $id ) {
+			if ( ! isset( $visited[ $id ] ) ) {
+				$rows[] = [ 'term' => $by_id[ $id ], 'depth' => 0 ];
+			}
+		}
+		return $rows;
 	}
 
 	/**
@@ -746,20 +1024,22 @@ final class MODEP_Shortcode {
 	}
 
 	/**
-	 * Render chips-only filters UI.
+	 * Render the shared filter control markup for every presentation style.
 	 *
 	 * @param array $blocks UI blocks.
 	 * @return string
 	 */
-	private static function render_filters_ui_chips( array $blocks ) : string {
+	private static function render_filters_ui( array $blocks, string $style, bool $hierarchical ) : string {
 		if ( empty( $blocks ) ) {
 			// Keep layout stable: empty sidebar wrapper.
-			return '<aside class="modep-sidebar" aria-label="' . esc_attr__( 'Filters', 'modefilter-pro' ) . '"></aside>';
+			$css_class = 'modep-sidebar modep--ui-' . esc_attr( $style );
+			return '<aside class="' . esc_attr( $css_class ) . '" aria-label="' . esc_attr__( 'Filters', 'modefilter-pro' ) . '"></aside>';
 		}
 
 		ob_start();
+		$css_class = 'modep-sidebar modep--ui-' . esc_attr( $style );
 		?>
-		<aside class="modep-sidebar" aria-label="<?php esc_attr_e( 'Filters', 'modefilter-pro' ); ?>">
+		<aside class="<?php echo esc_attr( $css_class ); ?>" aria-label="<?php esc_attr_e( 'Filters', 'modefilter-pro' ); ?>" data-filter-style="<?php echo esc_attr( $style ); ?>">
 			<?php foreach ( $blocks as $block ) : ?>
 				<?php
 				$label      = isset( $block['label'] ) ? (string) $block['label'] : '';
@@ -768,22 +1048,32 @@ final class MODEP_Shortcode {
 				$has_more   = ! empty( $block['has_more'] );
 				?>
 				<?php if ( '' !== $filter_key && ! empty( $chips ) ) : ?>
-					<section class="modep-filter-box" data-filter-block="<?php echo esc_attr( $filter_key ); ?>">
+					<section class="modep-filter-box<?php echo $hierarchical && 'category' === $filter_key ? ' modep-filter-box--hierarchical' : ''; ?>" data-filter-block="<?php echo esc_attr( $filter_key ); ?>">
 						<h3 class="modep-filter-title"><?php echo esc_html( $label ); ?></h3>
 
-						<div class="modep-chips" data-filter="<?php echo esc_attr( $filter_key ); ?>">
+						<div class="modep-chips modep-options" data-filter="<?php echo esc_attr( $filter_key ); ?>" role="<?php echo 'radios' === $style ? 'radiogroup' : 'group'; ?>" aria-label="<?php echo esc_attr( $label ); ?>">
 							<?php foreach ( $chips as $chip ) : ?>
 								<?php
 								$value  = isset( $chip['value'] ) ? (string) $chip['value'] : '';
 								$text   = isset( $chip['label'] ) ? (string) $chip['label'] : '';
 								$active = ! empty( $chip['active'] );
 								$hidden = ! empty( $chip['hidden'] );
-								$cls    = 'modep-chip' . ( $active ? ' is-selected' : '' ) . ( $value === '' ? ' modep-chip--all' : '' );
+								$depth  = absint( $chip['depth'] ?? 0 );
+							$cls    = 'modep-chip'
+								. ' modep-option'
+								. ( $active ? ' is-selected' : '' )
+								. ( $value === '' ? ' modep-chip--all' : '' )
+								. ( $hidden ? ' modep-chip--hidden' : '' )
+								. ( $depth > 0 ? ' modep-option--child' : '' );
+							$role = 'radios' === $style ? 'radio' : ( in_array( $style, [ 'checkboxes', 'toggles', 'hierarchical' ], true ) ? 'checkbox' : '' );
 								?>
 								<button
 									type="button"
 									class="<?php echo esc_attr( $cls ); ?>"
 									data-term="<?php echo esc_attr( $value ); ?>"
+									data-depth="<?php echo esc_attr( (string) $depth ); ?>"
+									style="--modep-depth: <?php echo esc_attr( (string) $depth ); ?>; --modep-indent: <?php echo esc_attr( (string) ( $depth * 18 ) ); ?>px; --modep-branch-indent: <?php echo esc_attr( (string) ( max( 0, $depth - 1 ) * 18 ) ); ?>px;"
+									<?php echo '' !== $role ? 'role="' . esc_attr( $role ) . '" aria-checked="' . ( $active ? 'true' : 'false' ) . '"' : 'aria-pressed="' . ( $active ? 'true' : 'false' ) . '"'; ?>
 									<?php echo $hidden ? 'data-hidden="1" hidden' : ''; ?>
 								>
 									<?php echo esc_html( $text ); ?>
@@ -814,6 +1104,41 @@ final class MODEP_Shortcode {
 	 */
 	private static function get_source_product_ids( bool $only_catalog, string $sellable_cat_slug ) : array {
 		$sellable_cat_slug = sanitize_title( $sellable_cat_slug );
+		$cache_version     = class_exists( 'MODEP_Catalog_Index' ) ? MODEP_Catalog_Index::cache_version() : 1;
+		$cache_key         = 'modep_source_' . md5( ( $only_catalog ? 'catalog' : 'sell' ) . '|' . $sellable_cat_slug . '|' . $cache_version );
+		$cached            = get_transient( $cache_key );
+		if ( is_array( $cached ) ) {
+			return array_map( 'absint', $cached );
+		}
+		$remember = static function ( array $ids ) use ( $cache_key ) : array {
+			$ids = array_values( array_unique( array_filter( array_map( 'absint', $ids ) ) ) );
+			set_transient( $cache_key, $ids, 10 * MINUTE_IN_SECONDS );
+			return $ids;
+		};
+
+		if ( class_exists( 'MODEP_Catalog_Index' ) && MODEP_Catalog_Index::is_ready() ) {
+			$indexed_args = [
+				'post_type'              => 'product',
+				'post_status'            => 'publish',
+				'posts_per_page'         => -1,
+				'fields'                 => 'ids',
+				'no_found_rows'          => true,
+				'update_post_meta_cache' => false,
+				'update_post_term_cache' => false,
+				'meta_query'             => MODEP_Catalog_Index::add_mode_clause( [], $only_catalog ), // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			];
+			if ( ! $only_catalog && '' !== $sellable_cat_slug ) {
+				$indexed_args['tax_query'] = [ // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+					[
+						'taxonomy' => 'product_cat',
+						'field'    => 'slug',
+						'terms'    => [ $sellable_cat_slug ],
+					],
+				];
+			}
+			$indexed = new WP_Query( $indexed_args );
+			return $remember( (array) $indexed->posts );
+		}
 
 		// Catalog pool
 		if ( $only_catalog && class_exists( 'MODEP_Catalog_Mode' ) ) {
@@ -851,7 +1176,7 @@ final class MODEP_Shortcode {
 			}
 			wp_reset_postdata();
 
-			return array_values( array_unique( array_filter( $ids ) ) );
+			return $remember( $ids );
 		}
 
 		// Sellable pool, variant A: explicit sellable base category
@@ -879,7 +1204,7 @@ final class MODEP_Shortcode {
 			$ids = $q->have_posts() ? array_map( 'absint', (array) $q->posts ) : [];
 			wp_reset_postdata();
 
-			return array_values( array_unique( array_filter( $ids ) ) );
+			return $remember( $ids );
 		}
 
 		// Sellable pool, variant B: if Catalog Mode exists, sellable means "non-catalog"
@@ -918,7 +1243,7 @@ final class MODEP_Shortcode {
 			}
 			wp_reset_postdata();
 
-			return array_values( array_unique( array_filter( $ids ) ) );
+			return $remember( $ids );
 		}
 
 		// Sellable pool, fallback: all products
@@ -938,6 +1263,6 @@ final class MODEP_Shortcode {
 		$ids = $q->have_posts() ? array_map( 'absint', (array) $q->posts ) : [];
 		wp_reset_postdata();
 
-		return array_values( array_unique( array_filter( $ids ) ) );
+		return $remember( $ids );
 	}
 }

@@ -49,11 +49,18 @@ final class MODEP_Plugin {
             require_once $pay_logic;
         }
 
-        // 2. Initialize Core Subsystems.
+		// 2. Initialize Core Subsystems.
         if ( class_exists( 'MODEP_Assets' ) )    MODEP_Assets::init();
         if ( class_exists( 'MODEP_Shortcode' ) ) MODEP_Shortcode::init();
         if ( class_exists( 'MODEP_Ajax' ) )      MODEP_Ajax::init();
         if ( class_exists( 'MODEP_Stock' ) )     MODEP_Stock::init();
+
+		// 2b. Catalog/Sell mode system (frontend behaviour + admin UI).
+		// This must be initialized so catalog-only grids can reliably detect modes.
+        if ( class_exists( 'MODEP_Catalog_Mode' ) ) MODEP_Catalog_Mode::init();
+		if ( class_exists( 'MODEP_Catalog_Index' ) ) MODEP_Catalog_Index::init();
+		if ( class_exists( 'MODEP_Catalog_Ext' ) )  MODEP_Catalog_Ext::init();
+		if ( class_exists( 'MODEP_Review' ) ) MODEP_Review::init();
 
         // 3. Elementor Integration.
         add_action( 'elementor/elements/categories_registered', [ $this, 'register_elementor_category' ] );

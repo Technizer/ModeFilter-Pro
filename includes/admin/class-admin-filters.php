@@ -12,11 +12,13 @@ final class MODEP_Admin_Filters {
 
         add_settings_section( 'modep_ui_main', '', '__return_false', 'modep_ui' ); // we render sections manually
         add_settings_field( 'modep_ui_core',  '', [ __CLASS__, 'field_core'  ], 'modep_ui', 'modep_ui_main' );
+        add_settings_field( 'modep_ui_presentation', '', [ __CLASS__, 'field_presentation' ], 'modep_ui', 'modep_ui_main' );
         add_settings_field( 'modep_ui_attrs', '', [ __CLASS__, 'field_attrs' ], 'modep_ui', 'modep_ui_main' );
         add_settings_field( 'modep_ui_custom', '', [ __CLASS__, 'field_custom' ], 'modep_ui', 'modep_ui_main' ); // ADDED: Field for custom filters
     }
 
     public static function sanitize_ui( $input ) {
+        $input = is_array( $input ) ? $input : [];
         $out = [
             'core'  => [
                 'category' => ! empty( $input['core']['category'] ) ? 1 : 0,
@@ -27,6 +29,12 @@ final class MODEP_Admin_Filters {
             ],
             'attrs' => [],
             'custom' => [], // ADDED: Initialize custom array
+            'presentation' => [
+                'filter_style'       => self::sanitize_choice( $input['presentation']['filter_style'] ?? 'chips', [ 'chips', 'checkboxes', 'radios', 'toggles', 'hierarchical' ], 'chips' ),
+                'category_hierarchy' => ! empty( $input['presentation']['category_hierarchy'] ) ? 'yes' : 'no',
+                'loader_style'       => self::sanitize_choice( $input['presentation']['loader_style'] ?? 'spinner', [ 'spinner', 'skeleton', 'dots', 'pulse', 'custom', 'none' ], 'spinner' ),
+                'loader_image'       => esc_url_raw( (string) ( $input['presentation']['loader_image'] ?? '' ) ),
+            ],
         ];
 
         if ( ! empty( $input['attrs'] ) && is_array( $input['attrs'] ) ) {
@@ -50,6 +58,56 @@ final class MODEP_Admin_Filters {
         }
 
         return $out;
+    }
+
+    private static function sanitize_choice( $value, array $allowed, string $fallback ) : string {
+        $value = sanitize_key( (string) $value );
+        return in_array( $value, $allowed, true ) ? $value : $fallback;
+    }
+
+    public static function field_presentation() : void {
+        $opt          = (array) get_option( MODEP_Admin::OPT_UI, [] );
+        $presentation = isset( $opt['presentation'] ) && is_array( $opt['presentation'] ) ? $opt['presentation'] : [];
+        $style        = self::sanitize_choice( $presentation['filter_style'] ?? 'chips', [ 'chips', 'checkboxes', 'radios', 'toggles', 'hierarchical' ], 'chips' );
+        $loader       = self::sanitize_choice( $presentation['loader_style'] ?? 'spinner', [ 'spinner', 'skeleton', 'dots', 'pulse', 'custom', 'none' ], 'spinner' );
+        ?>
+        <div class="modep-form-grid">
+            <label>
+                <strong><?php esc_html_e( 'Default filter style', 'modefilter-pro' ); ?></strong>
+                <select class="modep-select" name="<?php echo esc_attr( MODEP_Admin::OPT_UI ); ?>[presentation][filter_style]">
+                    <option value="chips" <?php selected( $style, 'chips' ); ?>><?php esc_html_e( 'Modern Chips', 'modefilter-pro' ); ?></option>
+                    <option value="checkboxes" <?php selected( $style, 'checkboxes' ); ?>><?php esc_html_e( 'Checkboxes', 'modefilter-pro' ); ?></option>
+                    <option value="radios" <?php selected( $style, 'radios' ); ?>><?php esc_html_e( 'Radio Buttons', 'modefilter-pro' ); ?></option>
+                    <option value="toggles" <?php selected( $style, 'toggles' ); ?>><?php esc_html_e( 'Toggle Switches', 'modefilter-pro' ); ?></option>
+                    <option value="hierarchical" <?php selected( $style, 'hierarchical' ); ?>><?php esc_html_e( 'Hierarchical Category Tree', 'modefilter-pro' ); ?></option>
+                </select>
+            </label>
+            <label class="modep-checkbox">
+                <input type="checkbox" name="<?php echo esc_attr( MODEP_Admin::OPT_UI ); ?>[presentation][category_hierarchy]" value="1" <?php checked( 'yes', $presentation['category_hierarchy'] ?? 'no' ); ?> />
+                <span><?php esc_html_e( 'Preserve parent/child category hierarchy with any filter style', 'modefilter-pro' ); ?></span>
+            </label>
+            <label>
+                <strong><?php esc_html_e( 'Default AJAX loader', 'modefilter-pro' ); ?></strong>
+                <select class="modep-select" name="<?php echo esc_attr( MODEP_Admin::OPT_UI ); ?>[presentation][loader_style]">
+                    <option value="spinner" <?php selected( $loader, 'spinner' ); ?>><?php esc_html_e( 'Spinning Loader', 'modefilter-pro' ); ?></option>
+                    <option value="skeleton" <?php selected( $loader, 'skeleton' ); ?>><?php esc_html_e( 'Product Skeletons', 'modefilter-pro' ); ?></option>
+                    <option value="dots" <?php selected( $loader, 'dots' ); ?>><?php esc_html_e( 'Animated Dots', 'modefilter-pro' ); ?></option>
+                    <option value="pulse" <?php selected( $loader, 'pulse' ); ?>><?php esc_html_e( 'Pulsing Ring', 'modefilter-pro' ); ?></option>
+                    <option value="custom" <?php selected( $loader, 'custom' ); ?>><?php esc_html_e( 'Custom Image / GIF / SVG', 'modefilter-pro' ); ?></option>
+                    <option value="none" <?php selected( $loader, 'none' ); ?>><?php esc_html_e( 'No Visual Loader', 'modefilter-pro' ); ?></option>
+                </select>
+            </label>
+            <label>
+                <strong><?php esc_html_e( 'Custom loader image URL', 'modefilter-pro' ); ?></strong>
+                <span class="modep-row modep-gap">
+                    <input id="modep_global_loader_image" type="url" class="regular-text" name="<?php echo esc_attr( MODEP_Admin::OPT_UI ); ?>[presentation][loader_image]" value="<?php echo esc_attr( (string) ( $presentation['loader_image'] ?? '' ) ); ?>" placeholder="https://example.com/loader.gif" />
+                    <button type="button" class="button modep-loader-media-select" data-target="modep_global_loader_image"><?php esc_html_e( 'Choose Media', 'modefilter-pro' ); ?></button>
+                    <button type="button" class="button-link-delete modep-loader-media-clear" data-target="modep_global_loader_image"><?php esc_html_e( 'Clear', 'modefilter-pro' ); ?></button>
+                </span>
+                <span class="description"><?php esc_html_e( 'Used when Custom Image is selected. GIF, SVG, WebP and PNG URLs are supported.', 'modefilter-pro' ); ?></span>
+            </label>
+        </div>
+        <?php
     }
 
     public static function field_core() : void {
@@ -160,6 +218,13 @@ final class MODEP_Admin_Filters {
 		self::field_core();
 		MODEP_Admin_UI::section_card_close();
 
+		MODEP_Admin_UI::section_card_open(
+			__( 'Filter Presentation & AJAX Loader', 'modefilter-pro' ),
+			__( 'Set defaults used by shortcodes and Elementor widgets when they are configured to inherit global settings.', 'modefilter-pro' )
+		);
+		self::field_presentation();
+		MODEP_Admin_UI::section_card_close();
+
 		// Section: Attribute filters.
 		MODEP_Admin_UI::section_card_open(
 			__( 'Attribute Filters', 'modefilter-pro' ),
@@ -176,6 +241,18 @@ final class MODEP_Admin_Filters {
 		self::field_custom();
 		MODEP_Admin_UI::section_card_close();
 
+		// Section: Filter Customization (NEW in v1.0.7)
+		MODEP_Admin_UI::section_card_open(
+			__( 'Advanced: Filter Chip Customization', 'modefilter-pro' ),
+			__( 'Customize colors, spacing, and borders of filter chips. Leave empty to use default theme colors.', 'modefilter-pro' )
+		);
+		ob_start();
+		MODEP_Admin_Filter_Customize::field_colors();
+		MODEP_Admin_Filter_Customize::field_spacing();
+		MODEP_Admin_Filter_Customize::field_borders();
+		$customize_html = ob_get_clean();
+		echo wp_kses_post( $customize_html );
+		MODEP_Admin_UI::section_card_close();
 
         submit_button( __( 'Save Settings', 'modefilter-pro' ) );
         echo '</form>';

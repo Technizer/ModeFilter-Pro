@@ -35,6 +35,7 @@ final class MODEP_Admin {
             'class-admin-catalog.php',
             'class-admin-builder.php',
             'class-admin-help.php',
+            'class-admin-filter-customize.php',
         ];
 
         foreach ( $modules as $file ) {
@@ -53,6 +54,7 @@ final class MODEP_Admin {
         add_action( 'admin_menu', [ __CLASS__, 'menu' ] );
         add_action( 'admin_init', [ 'MODEP_Admin_Filters', 'register_settings' ] );
         add_action( 'admin_init', [ 'MODEP_Admin_Catalog', 'register_settings' ] );
+        add_action( 'admin_init', [ 'MODEP_Admin_Filter_Customize', 'register_settings' ] );
 
         if ( class_exists( 'MODEP_Enquiry_Settings' ) ) {
             add_action( 'admin_init', [ 'MODEP_Enquiry_Settings', 'register_settings' ] );
@@ -80,10 +82,17 @@ final class MODEP_Admin {
 
         wp_enqueue_style( 'modep-admin-css', MODEP_PLUGIN_URL . 'admin/admin-dashboard.css', [], MODEP_VERSION );
         wp_enqueue_script( 'modep-admin-js', MODEP_PLUGIN_URL . 'admin/admin.js', [ 'jquery' ], MODEP_VERSION, true );
+        wp_enqueue_script( 'modep-admin-kits', MODEP_PLUGIN_URL . 'admin/admin-template-kits.js', [ 'jquery' ], MODEP_VERSION, true );
+        wp_enqueue_script( 'modep-elementor-enhance', MODEP_PLUGIN_URL . 'admin/elementor-widget-enhancements.js', [], MODEP_VERSION, true );
 
         wp_localize_script( 'modep-admin-js', 'MODEP_ADMIN', [
             'ajax_url' => admin_url( 'admin-ajax.php' ),
             'nonce'    => wp_create_nonce( 'modep_admin_nonce' ),
+			'i18n'     => [
+				'choose_loader' => __( 'Choose AJAX loader', 'modefilter-pro' ),
+				'use_loader'    => __( 'Use this loader', 'modefilter-pro' ),
+			],
+			'darkmode' => self::is_dark_mode(),
         ] );
 
         /**
@@ -93,9 +102,22 @@ final class MODEP_Admin {
          */
         $current_page = filter_input( INPUT_GET, 'page', FILTER_SANITIZE_FULL_SPECIAL_CHARS );
 
+		if ( in_array( $current_page, [ 'modefilter-pro-filters', 'modefilter-pro-builder' ], true ) ) {
+			wp_enqueue_media();
+		}
+
         if ( 'modefilter-pro-builder' === $current_page ) {
             wp_enqueue_script( 'modep-builder', MODEP_PLUGIN_URL . 'admin/admin-shortcode-builder.js', [ 'jquery' ], MODEP_VERSION, true );
         }
+    }
+
+    /**
+     * Detect if WordPress admin is in dark mode.
+     */
+    private static function is_dark_mode() : bool {
+        $user_id = get_current_user_id();
+        $admin_color = get_user_meta( $user_id, 'admin_color', true );
+        return in_array( $admin_color, [ 'midnight', 'ocean', 'ectoplasm' ], true );
     }
 
     /**

@@ -53,6 +53,13 @@ final class MODEP_Admin_Dashboard {
                 );
                 echo '&nbsp;';
                 MODEP_Admin_UI::button(
+                    __( 'Customize Filters', 'modefilter-pro' ),
+                    admin_url( 'admin.php?page=modefilter-pro-filters' ),
+                    false,
+                    []
+                );
+                echo '&nbsp;';
+                MODEP_Admin_UI::button(
                     __( 'View Documentation', 'modefilter-pro' ),
                     self::docs_url(),
                     false,
@@ -61,7 +68,34 @@ final class MODEP_Admin_Dashboard {
                         'rel'    => 'noopener',
                     ]
                 );
+				echo '&nbsp;';
+				MODEP_Admin_UI::button(
+					__( 'Write a Review', 'modefilter-pro' ),
+					class_exists( 'MODEP_Review' ) ? MODEP_Review::review_url() : 'https://wordpress.org/support/plugin/modefilter-pro/reviews/#new-post',
+					false,
+					[
+						'target' => '_blank',
+						'rel'    => 'noopener noreferrer',
+					]
+				);
             echo '</div>';
+        echo '</div>';
+
+        // --- NEW: Template Kits Showcase (v1.0.7) ---
+        ob_start();
+        ?>
+        <p><?php esc_html_e( 'Choose a template kit to quickly configure your filters and grid. Each kit comes pre-configured with a recommended filter style, layout, and spacing.', 'modefilter-pro' ); ?></p>
+        <?php
+        MODEP_Template_Kits::render_selector( 'classic' );
+        $kits_body = ob_get_clean();
+
+        echo '<div style="margin-top: 24px;">';
+        MODEP_Admin_UI::card([
+            'badge'  => __( 'New in v1.0.7', 'modefilter-pro' ),
+            'title'  => __( '6 Template Kits', 'modefilter-pro' ),
+            'body'   => $kits_body,
+            'footer' => '<a class="modep-link" href="' . esc_url( self::builder_url() ) . '">' . esc_html__( 'Use in Shortcode Builder →', 'modefilter-pro' ) . '</a>',
+        ]);
         echo '</div>';
 
         // --- 3-Column Resource Grid ---
@@ -89,13 +123,10 @@ final class MODEP_Admin_Dashboard {
         // 2. Tutorials Card (YouTube)
         ob_start();
         ?>
-        <div class="modep-media">
-            <iframe class="modep-yt"
-                    src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-                    title="<?php esc_attr_e( 'ModeFilter Pro – Quick Start', 'modefilter-pro' ); ?>"
-                    allowfullscreen
-                    loading="lazy"></iframe>
-        </div>
+        <div class="modep-media modep-media--placeholder">
+			<p><strong><?php esc_html_e( 'Step-by-step video guides are being prepared.', 'modefilter-pro' ); ?></strong></p>
+			<p><?php esc_html_e( 'Visit the channel for the latest published tutorials.', 'modefilter-pro' ); ?></p>
+		</div>
         <ul class="modep-list">
             <li><a href="<?php echo esc_url( self::yt_url() ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Channel: Latest Tutorials', 'modefilter-pro' ); ?></a></li>
             <li><?php esc_html_e( 'Building a minimal chips UI', 'modefilter-pro' ); ?></li>
@@ -129,8 +160,8 @@ final class MODEP_Admin_Dashboard {
                 </button>
             </div>
             <div class="modep-sc-row">
-                <code>[modep_filters filter_ui="chips" filter_position="top"]</code>
-                <button class="button modep-copy" data-copy='[modep_filters filter_ui="chips" filter_position="top"]'>
+                <code>[modep_filters filter_style="chips" filter_position="top"]</code>
+                <button class="button modep-copy" data-copy='[modep_filters filter_style="chips" filter_position="top"]'>
                     <?php esc_html_e( 'Copy', 'modefilter-pro' ); ?>
                 </button>
             </div>

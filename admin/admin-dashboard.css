@@ -1,5 +1,17 @@
 /* --- ModeFilter Pro Admin – modern 2026 vibe --- */
 
+:root {
+    --modep-primary: #0b66ff;
+    --modep-primary-light: rgba(11, 102, 255, 0.1);
+    --modep-success: #059669;
+    --modep-warning: #f59e0b;
+    --modep-danger: #dc2626;
+    --modep-bg-light: #f9fafb;
+    --modep-border: #e5e7eb;
+    --modep-text: #111827;
+    --modep-text-muted: #6b7280;
+}
+
 .modep-wrap {
     max-width: 1100px;
 }
@@ -651,6 +663,29 @@ th.column-modep_catalog_mode {
     box-shadow: none;
 }
 
+.modep-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(240px, 1fr));
+    gap: 18px 24px;
+    align-items: start;
+}
+
+.modep-form-grid > label {
+    display: grid;
+    gap: 8px;
+}
+
+.modep-form-grid > .modep-checkbox {
+    display: flex;
+    align-items: flex-start;
+    padding-top: 28px;
+}
+
+@media (max-width: 782px) {
+    .modep-form-grid { grid-template-columns: 1fr; }
+    .modep-form-grid > .modep-checkbox { padding-top: 0; }
+}
+
 .modep-form textarea {
     padding: 10px 12px;
 }
@@ -726,3 +761,622 @@ th.column-modep_catalog_mode {
     color: #92400e;
     border: 1px solid rgba(245, 158, 11, 0.25);
 }
+
+/* ========================================
+   Template Kits Selector (v1.0.7+)
+   ======================================== */
+
+.modep-kit-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 20px 0;
+}
+
+.modep-kit-option {
+    position: relative;
+    cursor: pointer;
+}
+
+.modep-kit-option input[type="radio"] {
+    display: none;
+}
+
+.modep-kit-card {
+    position: relative;
+    background: #fff;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.23, 1, 0.320, 1);
+}
+
+.modep-kit-option.is-selected .modep-kit-card {
+    border-color: var(--modep-primary);
+    background: var(--modep-primary-light);
+    box-shadow: 0 8px 24px rgba(11, 102, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.modep-kit-card:hover {
+    border-color: var(--modep-primary);
+    box-shadow: 0 4px 12px rgba(11, 102, 255, 0.1);
+}
+
+.modep-kit-thumb {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    background: var(--modep-bg-light);
+    display: block;
+}
+
+.modep-kit-name {
+    margin: 12px 0 6px;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--modep-text);
+}
+
+.modep-kit-desc {
+    margin: 0;
+    font-size: 12px;
+    color: var(--modep-text-muted);
+    line-height: 1.4;
+}
+
+/* Checkmark indicator for selected kit */
+.modep-kit-option.is-selected .modep-kit-card::after {
+    content: '✓';
+    position: absolute;
+    top: -12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    background: var(--modep-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    box-shadow: 0 4px 8px rgba(11, 102, 255, 0.2);
+}
+
+/* Form sections with improved spacing */
+.modep-form-section {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.modep-form-section h2 {
+    margin-top: 0;
+    margin-bottom: 16px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--modep-text);
+}
+
+/* Improved form grid */
+.modep-form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.modep-form-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.modep-form-grid label > strong {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--modep-text);
+}
+
+.modep-form-grid select,
+.modep-form-grid input[type="text"],
+.modep-form-grid input[type="url"],
+.modep-form-grid input[type="number"] {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s ease;
+}
+
+.modep-form-grid select:focus,
+.modep-form-grid input:focus {
+    outline: none;
+    border-color: var(--modep-primary);
+    box-shadow: 0 0 0 3px var(--modep-primary-light);
+}
+
+/* Improved checkboxes */
+.modep-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.modep-checkbox input[type="checkbox"] {
+    cursor: pointer;
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    accent-color: var(--modep-primary);
+}
+
+.modep-checkbox span {
+    font-size: 14px;
+    color: var(--modep-text);
+    line-height: 1.4;
+}
+
+/* Better description text */
+.description {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--modep-text-muted);
+    line-height: 1.5;
+}
+
+/* Hero section improvements */
+.modep-hero {
+    background: linear-gradient(135deg, #f0f4ff 0%, #f9faff 100%);
+    border: 1px solid #e0e7ff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+}
+
+.modep-hero__cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.modep-hero .button {
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.modep-hero .button-primary {
+    background: var(--modep-primary);
+    border-color: var(--modep-primary);
+    color: white;
+}
+
+.modep-hero .button-primary:hover {
+    background: #0951d8;
+    border-color: #0951d8;
+    transform: translateY(-1px);
+    box-shadow: 0 8px 16px rgba(11, 102, 255, 0.2);
+}
+
+/* Tabs improvements */
+.modep-tabs {
+    display: flex;
+    gap: 4px;
+    border-bottom: 1px solid #e5e7eb;
+    margin-bottom: 20px;
+    overflow-x: auto;
+}
+
+.modep-tab {
+    padding: 12px 16px;
+    color: var(--modep-text-muted);
+    border-bottom: 2px solid transparent;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.modep-tab:hover {
+    color: var(--modep-text);
+    background: var(--modep-bg-light);
+}
+
+.modep-tab.is-active {
+    color: var(--modep-primary);
+    border-bottom-color: var(--modep-primary);
+    background: var(--modep-primary-light);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .modep-kit-selector {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+    }
+
+    .modep-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .modep-hero {
+        padding: 16px;
+    }
+
+    .modep-hero__cta {
+        flex-direction: column;
+    }
+
+    .modep-hero .button {
+        width: 100%;
+        text-align: center;
+    }
+}
+
+
+/* ========================================
+   Dark Mode Support (v1.0.7+)
+   ======================================== */
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --modep-primary: #3b82f6;
+        --modep-primary-light: rgba(59, 130, 246, 0.15);
+        --modep-bg-light: #1f2937;
+        --modep-border: #374151;
+        --modep-text: #f3f4f6;
+        --modep-text-muted: #9ca3af;
+    }
+
+    .modep-wrap {
+        background: #111827;
+        color: #f3f4f6;
+    }
+
+    .modep-card,
+    .modep-form-section {
+        background: #1f2937;
+        border-color: #374151;
+    }
+
+    .modep-kit-card {
+        background: #111827;
+        border-color: #374151;
+    }
+
+    .modep-hero {
+        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        border-color: #334155;
+    }
+
+    .modep-tabs {
+        border-bottom-color: #374151;
+    }
+
+    .modep-tab {
+        color: #9ca3af;
+    }
+
+    .modep-tab:hover {
+        color: #f3f4f6;
+        background: rgba(59, 130, 246, 0.1);
+    }
+
+    .modep-tab.is-active {
+        background: rgba(59, 130, 246, 0.15);
+        border-bottom-color: #3b82f6;
+    }
+
+    .modep-form-grid select,
+    .modep-form-grid input[type="text"],
+    .modep-form-grid input[type="url"],
+    .modep-form-grid input[type="number"] {
+        background: #111827;
+        color: #f3f4f6;
+        border-color: #374151;
+    }
+
+    .modep-form-grid select:focus,
+    .modep-form-grid input:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    #modep-shortcode-preview {
+        background: #111827;
+        border-color: #374151;
+        color: #d1d5db;
+    }
+
+    #modep-shortcode-preview code {
+        color: #e5e7eb;
+    }
+}
+
+/* ========================================
+   Mobile Responsiveness (v1.0.7+)
+   ======================================== */
+
+@media (max-width: 1024px) {
+    .modep-wrap {
+        max-width: 100%;
+        padding: 0 16px;
+    }
+
+    .modep-grid-3 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .modep-card {
+        padding: 12px;
+    }
+
+    .modep-card-padded {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .modep-h1 {
+        font-size: 22px;
+    }
+
+    .modep-grid-2,
+    .modep-grid-3,
+    .modep-grid-4 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .modep-tabs {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modep-tab {
+        padding: 10px 12px;
+        font-size: 12px;
+    }
+
+    .modep-form-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .modep-kit-selector {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    .modep-card {
+        padding: 10px;
+    }
+
+    .modep-card-padded {
+        padding: 12px;
+    }
+
+    .modep-hero {
+        padding: 16px;
+    }
+
+    .modep-hero__cta {
+        flex-direction: column;
+    }
+
+    .modep-hero .button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .modep-columns--2 {
+        grid-template-columns: 1fr;
+    }
+
+    .modep-form-table {
+        font-size: 13px;
+    }
+
+    .modep-form-table th {
+        padding: 10px 8px;
+    }
+
+    .modep-form-table td {
+        padding: 10px 8px;
+    }
+
+    .modep-sc-list {
+        flex-direction: column;
+    }
+
+    .modep-sc-row {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modep-sc-row code {
+        word-break: break-all;
+        font-size: 11px;
+    }
+
+    .modep-copy {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .modep-wrap {
+        padding: 0 12px;
+    }
+
+    .modep-h1 {
+        font-size: 18px;
+    }
+
+    .modep-kit-selector {
+        grid-template-columns: 1fr;
+    }
+
+    .modep-kit-card {
+        padding: 12px;
+    }
+
+    .modep-kit-name {
+        font-size: 13px;
+    }
+
+    .modep-kit-desc {
+        font-size: 11px;
+    }
+
+    .modep-kit-thumb {
+        height: 80px;
+    }
+
+    .modep-modal-content {
+        padding: 20px;
+    }
+
+    .modep-onboarding-steps {
+        grid-template-columns: 1fr;
+    }
+
+    .modep-feedback {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        border-radius: 6px;
+        font-size: 12px;
+    }
+
+    .modep-form-table {
+        font-size: 12px;
+    }
+
+    .modep-form-table th {
+        display: block;
+        padding: 8px 0;
+    }
+
+    .modep-form-table td {
+        display: block;
+        padding: 8px 0;
+    }
+}
+
+/* ========================================
+   Filter Customization Section (v1.0.7+)
+   ======================================== */
+
+.modep-filter-customize {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+}
+
+.modep-color-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.modep-color-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--modep-text);
+}
+
+.modep-color-picker {
+    height: 40px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+}
+
+.modep-spacing-control {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.modep-spacing-control input[type="range"] {
+    flex: 1;
+}
+
+.modep-spacing-control .modep-value {
+    min-width: 60px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--modep-text);
+}
+
+.modep-border-style {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+}
+
+.modep-border-style label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+}
+
+.modep-border-style input[type="radio"] {
+    margin: 0;
+}
+
+.modep-preview-box {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 16px;
+    text-align: center;
+    min-height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+@media (prefers-color-scheme: dark) {
+    .modep-preview-box {
+        background: #1f2937;
+        border-color: #374151;
+        color: #9ca3af;
+    }
+}
+
+/* ========================================
+   Elementor Widget Enhancements (v1.0.7+)
+   ======================================== */
+
+.elementor-control-section-modep-filters .elementor-control-section-title {
+    color: #0b66ff;
+    font-weight: 600;
+}
+
+.elementor-control-section-modep-filters .elementor-controls-section {
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+.elementor-control-section-modep-filters .elementor-controls-section:hover {
+    box-shadow: 0 4px 12px rgba(11, 102, 255, 0.1);
+}
+

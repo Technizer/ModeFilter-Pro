@@ -32,6 +32,11 @@
     return out;
   }
 
+  function getSelectedKit() {
+    var selected = document.querySelector('input[name="modep_template_kit"]:checked');
+    return selected ? (selected.value || "").toString() : "";
+  }
+
   function setVal(id, value) {
     var el = byId(id);
     if (el) el.value = value;
@@ -53,6 +58,8 @@
   }
 
   function buildShortcode() {
+    var templateKit = getSelectedKit();
+
     // Core
     var onlyCatalog = getVal("modep_sc_only_catalog"); // yes/no
     var columns = getVal("modep_sc_columns");
@@ -63,12 +70,16 @@
 
     // Filters
     var filtersMode = getVal("modep_sc_filters_mode");
+    var filterStyle = getVal("modep_sc_filter_style");
+    var categoryHierarchy = getVal("modep_sc_category_hierarchy");
     var filters = getMultiVals("modep_sc_filters");
     var filterPosition = getVal("modep_sc_pos");
     var termsLimit = getVal("modep_sc_terms_limit");
     var termsOrderBy = getVal("modep_sc_terms_orderby");
     var termsOrder = getVal("modep_sc_terms_order");
     var termsShowMore = getVal("modep_sc_terms_show_more"); // yes/no
+    var loaderStyle = getVal("modep_sc_loader_style");
+    var loaderImage = getVal("modep_sc_loader_image");
 
     // Excludes / sellable base
     var excludeCat = getVal("modep_sc_exclude_cat");
@@ -86,6 +97,10 @@
 
     var parts = ["[modep_filters"];
 
+    if (templateKit) {
+      addAttr(parts, "template_kit", templateKit);
+    }
+
     // Mode
     if (onlyCatalog === "yes") {
       addAttr(parts, "only_catalog", "yes");
@@ -102,7 +117,8 @@
     addAttr(parts, "link_whole_card", linkWholeCard === "yes" ? "yes" : "no");
 
     // Filters
-    addAttr(parts, "filter_ui", "chips");
+    addAttr(parts, "filter_style", filterStyle || "global");
+    addAttr(parts, "category_hierarchy", categoryHierarchy || "global");
     addAttr(parts, "filter_position", filterPosition);
     addAttr(parts, "filters_mode", filtersMode);
     if (filters.length) {
@@ -112,6 +128,10 @@
     addAttr(parts, "terms_orderby", termsOrderBy);
     addAttr(parts, "terms_order", termsOrder);
     addAttr(parts, "terms_show_more", termsShowMore === "yes" ? "yes" : "no");
+    addAttr(parts, "loader_style", loaderStyle || "global");
+    if (loaderStyle === "custom" && loaderImage) {
+      addAttr(parts, "loader_image", loaderImage);
+    }
     addAttr(parts, "exclude_cat", excludeCat);
     addAttr(parts, "exclude_tag", excludeTag);
     addAttr(parts, "exclude_brand", excludeBrand);
